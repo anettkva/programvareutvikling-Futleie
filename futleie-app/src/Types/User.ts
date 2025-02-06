@@ -3,5 +3,6 @@ export type User = {
     username: string;
     created_at: string;
     email: string;
-    admin: boolean
+    admin: boolean;
+    password_hash: string;
 };
