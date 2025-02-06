@@ -1,8 +1,8 @@
 export type User = {
-    id: number;
+    id?: number;
     username: string;
-    created_at: string;
-    email: string;
+    created_at?: string;
+    email?: string;
     admin: boolean;
     password_hash: string;
 };

@@ -9,18 +9,48 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useState } from "react";
+import supabaseClient from "@/supabaseClient";
+import { User } from "@/Types";
+import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
+import CryptoJS from "crypto-js";
 
-export function LoginForm({
-    className,
-    ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+const LoginForm: React.FC<{}> = () => {
+    const [username, setUsername] = useState<string>();
+    const [password, setPassword] = useState<string>();
+    const navigate = useNavigate();
+
+    const logIn = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (username && password) {
+            const { data } = await supabaseClient
+                .from("Users")
+                .select("username, password_hash")
+                .eq("username", username)
+                .eq("password_hash", CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex));
+            console.log(data);
+            if (data) {
+                const user = data[0] as User;
+                if (user === undefined) {
+                    alert("Feil brukernavn eller passord");
+                    return;
+                }
+                Cookies.set("user", JSON.stringify(user), {domain: "localhost"})
+                navigate("/")
+            }
+            
+
+        }
+    }
+
     return (
-        <div className={cn("flex flex-col gap-6", className)} {...props}>
+        <div className={cn("flex flex-col gap-6")}>
             <Card>
                 <CardHeader>
                     <CardTitle className="text-2xl">Logg inn</CardTitle>
                     <CardDescription>
-                        Skriv inn e-posten din nedenfor for å logge inn på
+                        Skriv inn brukernavnet ditt nedenfor for å logge inn på
                         kontoen din
                     </CardDescription>
                 </CardHeader>
@@ -28,12 +58,14 @@ export function LoginForm({
                     <form>
                         <div className="flex flex-col gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="email">E-post</Label>
+                                <Label htmlFor="username">Brukernavn</Label>
                                 <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="m@example.com"
+                                    id="username"
+                                    type="username"
+                                    placeholder="Brukernavn"
                                     required
+                                    onChange={e => setUsername(e.target.value)}
+                                    autoComplete="off"
                                 />
                             </div>
                             <div className="grid gap-2">
@@ -46,9 +78,9 @@ export function LoginForm({
                                         Glemt passord?
                                     </a>
                                 </div>
-                                <Input id="password" type="password" required />
+                                <Input id="password" type="password" required onChange={e => {setPassword(e.target.value)}} autoComplete="off"/>
                             </div>
-                            <Button type="submit" className="w-full">
+                            <Button type="submit" className="w-full" onClick={e => logIn(e)}>
                                 Logg inn
                             </Button>
                             <Button variant="outline" className="w-full">
@@ -58,7 +90,7 @@ export function LoginForm({
                         <div className="mt-4 text-center text-sm">
                             Har du ikke bruker?{" "}
                             <a
-                                href="#"
+                                href="/signup"
                                 className="underline underline-offset-4"
                             >
                                 Registrer deg
@@ -70,3 +102,5 @@ export function LoginForm({
         </div>
     );
 }
+
+export default LoginForm;
