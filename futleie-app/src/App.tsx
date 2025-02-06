@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react'
 import reactLogo from './assets/react.svg'
-import { createClient } from '@supabase/supabase-js'
+import supabaseClient from './supabaseClient'
 import {User} from './Types'
-const supabaseUrl = 'https://wcudjrwfxpqnytjdmojb.supabase.co'
-const supabaseKey = process.env.SUPABASE_DEV_KEY as string
-const supabase = createClient(supabaseUrl, supabaseKey)
+
 
 function App() {
   const [users, setUsers] = useState<User[]>([]);
@@ -14,7 +12,7 @@ function App() {
   }, []);
 
   async function getUsers() {
-    const { data } = await supabase.from("Users").select();
+    const { data } = await supabaseClient.from("Users").select();
     if (data) {
       setUsers(data as User[]);
     }
