@@ -58,8 +58,8 @@ const Signup: React.FC<{}> = () => {
     };
 
     return (
-        <div className={cn("flex flex-col items-center gap-6")}>
-            <Card className="w-full max-w-md">
+        <div className={cn("flex flex-col gap-6")}>
+            <Card>
                 <CardHeader>
                     <CardTitle className="text-2xl">Opprett bruker</CardTitle>
                 </CardHeader>
