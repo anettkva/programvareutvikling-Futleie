@@ -11,8 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import supabaseClient from "@/supabaseClient";
 import { useState } from "react";
-import CryptoJS from 'crypto-js'
-import Cookie from 'js-cookie';
+import CryptoJS from "crypto-js";
+import Cookie from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { User } from "@/Types";
 
@@ -23,36 +23,43 @@ const Signup: React.FC<{}> = () => {
     const navigate = useNavigate();
 
     const setCookie = async () => {
-        const {data}= await supabaseClient.from("Users").select("username,password_hash").eq("password_hash", CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex));
+        const { data } = await supabaseClient
+            .from("Users")
+            .select("username,password_hash")
+            .eq(
+                "password_hash",
+                CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex)
+            );
         let user;
         if (data) {
-            user = data[0] as User
+            user = data[0] as User;
             console.log(user);
-            Cookie.set('user', JSON.stringify(user), { domain: 'localhost' }) 
+            Cookie.set("user", JSON.stringify(user), { domain: "localhost" });
         }
         navigate("/");
-            
-    }
+    };
 
-    const handleSignup = async(e: React.FormEvent) => {
+    const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
-        const {data, error} = await supabaseClient
-        .from('Users')
-        .insert([
-        { username: uname, email: mail, password_hash: CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex) }
-        ]
-        );
+        const { data, error } = await supabaseClient.from("Users").insert([
+            {
+                username: uname,
+                email: mail,
+                password_hash: CryptoJS.SHA256(password).toString(
+                    CryptoJS.enc.Hex
+                ),
+            },
+        ]);
         if (error) {
-            console.error('Error inserting data:', error);
-        } 
-        else {
+            console.error("Error inserting data:", error);
+        } else {
             setCookie();
         }
-    }  
+    };
 
     return (
-        <div className={cn("flex flex-col gap-6")}>
-            <Card>
+        <div className={cn("flex flex-col items-center gap-6")}>
+            <Card className="w-full max-w-md">
                 <CardHeader>
                     <CardTitle className="text-2xl">Opprett bruker</CardTitle>
                 </CardHeader>
@@ -60,43 +67,57 @@ const Signup: React.FC<{}> = () => {
                     <form>
                         <div className="flex flex-col gap-6">
                             <div className="grid gap-2">
-                                    <Label htmlFor="email">Brukernavn</Label>
-                                    <Input
-                                        id="username"
-                                        type="username"
-                                        placeholder="Brukernavn"
-                                        required
-                                        onChange={e => {setUname(e.target.value)}}
-                                        autoComplete="off"
-                                    />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="email">E-post</Label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        placeholder="m@example.com"
-                                        required
-                                        onChange={e => {setMail(e.target.value)}}
-                                        autoComplete="off"
-                                    />
-                                </div>
-                                <div className="grid gap-2">
-                                    <div className="flex items-center">
-                                        <Label htmlFor="password">Passord</Label>
-                                    </div>
-                                    <Input id="password" type="password" required onChange={e => {setPassword(e.target.value)}} />
-                                </div>
-                                <Button type="submit" className="w-full" onClick={e => handleSignup(e)}>
-                                    Opprett
-                                </Button>
+                                <Label htmlFor="username">Brukernavn</Label>
+                                <Input
+                                    id="username"
+                                    type="text"
+                                    placeholder="Brukernavn"
+                                    required
+                                    onChange={(e) => {
+                                        setUname(e.target.value);
+                                    }}
+                                    autoComplete="off"
+                                />
                             </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="email">E-post</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="m@example.com"
+                                    required
+                                    onChange={(e) => {
+                                        setMail(e.target.value);
+                                    }}
+                                    autoComplete="off"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <div className="flex items-center">
+                                    <Label htmlFor="password">Passord</Label>
+                                </div>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    required
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+                                    }}
+                                />
+                            </div>
+                            <Button
+                                type="submit"
+                                className="w-full"
+                                onClick={(e) => handleSignup(e)}
+                            >
+                                Opprett
+                            </Button>
+                        </div>
                     </form>
                 </CardContent>
             </Card>
         </div>
-    )
-    }
-
+    );
+};
 
 export default Signup;

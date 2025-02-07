@@ -28,7 +28,10 @@ const LoginForm: React.FC<{}> = () => {
                 .from("Users")
                 .select("username, password_hash")
                 .eq("username", username)
-                .eq("password_hash", CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex));
+                .eq(
+                    "password_hash",
+                    CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex)
+                );
             console.log(data);
             if (data) {
                 const user = data[0] as User;
@@ -36,13 +39,13 @@ const LoginForm: React.FC<{}> = () => {
                     alert("Feil brukernavn eller passord");
                     return;
                 }
-                Cookies.set("user", JSON.stringify(user), {domain: "localhost"})
-                navigate("/")
+                Cookies.set("user", JSON.stringify(user), {
+                    domain: "localhost",
+                });
+                navigate("/");
             }
-            
-
         }
-    }
+    };
 
     return (
         <div className={cn("flex flex-col gap-6")}>
@@ -64,7 +67,9 @@ const LoginForm: React.FC<{}> = () => {
                                     type="username"
                                     placeholder="Brukernavn"
                                     required
-                                    onChange={e => setUsername(e.target.value)}
+                                    onChange={(e) =>
+                                        setUsername(e.target.value)
+                                    }
                                     autoComplete="off"
                                 />
                             </div>
@@ -78,9 +83,21 @@ const LoginForm: React.FC<{}> = () => {
                                         Glemt passord?
                                     </a>
                                 </div>
-                                <Input id="password" type="password" required onChange={e => {setPassword(e.target.value)}} autoComplete="off"/>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    required
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+                                    }}
+                                    autoComplete="off"
+                                />
                             </div>
-                            <Button type="submit" className="w-full" onClick={e => logIn(e)}>
+                            <Button
+                                type="submit"
+                                className="w-full"
+                                onClick={(e) => logIn(e)}
+                            >
                                 Logg inn
                             </Button>
                             <Button variant="outline" className="w-full">
@@ -101,6 +118,6 @@ const LoginForm: React.FC<{}> = () => {
             </Card>
         </div>
     );
-}
+};
 
 export default LoginForm;
