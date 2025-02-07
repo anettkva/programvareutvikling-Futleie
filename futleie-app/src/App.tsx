@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
-import reactLogo from './assets/react.svg'
-import { createClient } from '@supabase/supabase-js'
-import {User} from './Types'
-const supabaseUrl = 'https://wcudjrwfxpqnytjdmojb.supabase.co'
-const supabaseKey = process.env.SUPABASE_DEV_KEY as string
-const supabase = createClient(supabaseUrl, supabaseKey)
+import { useState, useEffect } from "react";
+import reactLogo from "./assets/react.svg";
+import { createClient } from "@supabase/supabase-js";
+import { User } from "./Types";
+const supabaseUrl = "https://wcudjrwfxpqnytjdmojb.supabase.co";
+const supabaseKey = process.env.SUPABASE_DEV_KEY as string;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 function App() {
   const [users, setUsers] = useState<User[]>([]);
@@ -28,12 +28,12 @@ function App() {
       <div>
         <div className="text-xl font-medium text-black">Users</div>
         <ul>
-        {users.map((user) => (
-          <li key={user.username}>{user.username}</li>
-        ))}
-      </ul>
+          {users.map((user) => (
+            <li key={user.username}>{user.username}</li>
+          ))}
+        </ul>
       </div>
     </div>
-  )
+  );
 }
-export default App
+export default App;
