@@ -1,38 +1,37 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import soundboksImage from "../assets/soundboks.jpg";
 
-export function ItemCard({
+interface ItemCardProps extends React.ComponentPropsWithoutRef<"div"> {
+  title: string;
+  imageUrl: string;
+  owner: string;
+}
+
+const ItemCard: React.FC<ItemCardProps> = ({
   className,
+  title,
+  imageUrl,
+  owner,
   ...props
-}: React.ComponentPropsWithoutRef<"div">) {
-  // Mock data
-  const mockData = {
-    title: "Mock Title",
-    imageUrl: soundboksImage,
-    owner: "Mock Owner",
-  };
+}) => {
+  console.log("Rendering ItemCard with props:", { title, imageUrl, owner });
 
   return (
     <div
-      className={cn("flex flex-column gap-6 justify-center ", className)}
+      className={cn("flex flex-column gap-6 justify-center", className)}
       {...props}
     >
       <Card className="transition-shadow duration-300 ease-in-out shadow-md hover:shadow-2xl hover:scale-105 transform">
         <CardHeader>
-          <img
-            src={mockData.imageUrl}
-            alt="Item Image"
-            className="w-full h-auto"
-          />
+          <img src={imageUrl} alt="Item Image" className="w-full h-auto" />
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-6">
-            <CardTitle className="text-xl">{mockData.title}</CardTitle>
+            <CardTitle className="text-xl">{title}</CardTitle>
             <section className="flex flex-row justify-between">
               <p aria-label="owner" className="text-slate-400">
-                {mockData.owner}
+                {owner}
               </p>
             </section>
           </div>
@@ -40,4 +39,6 @@ export function ItemCard({
       </Card>
     </div>
   );
-}
+};
+
+export default ItemCard;
