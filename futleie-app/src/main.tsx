@@ -7,13 +7,13 @@ import Page from "./app/login/page.tsx";
 import Signup from "./app/signup/page.tsx";
 
 createRoot(document.getElementById("root")!).render(
-    <StrictMode>
-        <Router>
-            <Routes>
-                <Route path="/" element={<App />}></Route>
-                <Route path="/login" element={<Page />}></Route>
-                <Route path="/signup" element={<Signup />}></Route>
-            </Routes>
-        </Router>
-    </StrictMode>
+  <StrictMode>
+    <Router>
+      <Routes>
+        <Route path="/" element={<App />}></Route>
+        <Route path="/login" element={<Page />}></Route>
+        <Route path="/signup" element={<Signup />}></Route>
+      </Routes>
+    </Router>
+  </StrictMode>
 );
