@@ -3,6 +3,7 @@ import Layout from "./components/layout";
 import Page from "./app/login/page";
 import Signup from "./app/signup/page";
 import Gallery from "./pages/gallery";
+import CreateAdPage from "./pages/create-ad";
 import Cookie from "js-cookie";
 
 const App: React.FC<{}> = () => {
@@ -26,6 +27,7 @@ const App: React.FC<{}> = () => {
       <Route path="/login" element={<Page />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/gallery" element={<Layout><Gallery /></Layout>} />
+      <Route path="/create-ad" element={<CreateAdPage />} />
     </Routes>
   );
 };  

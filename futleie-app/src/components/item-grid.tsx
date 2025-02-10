@@ -2,9 +2,16 @@ import React, { useEffect, useState } from "react";
 import ItemCard from "@/components/item-card";
 import supabaseClient from "@/supabaseClient";
 import { Item } from "@/Types/Item";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const ItemGrid: React.FC<object> = () => {
   const [items, setItems] = useState<Item[]>([]);
+  const navigate = useNavigate();
+
+  const handleCreateAd = () => {
+    navigate("/create-ad");
+  };
 
   /**
    * Hook som henter alle items fra databasen og setter dem i items state
@@ -33,6 +40,11 @@ const ItemGrid: React.FC<object> = () => {
 
   return (
     <div>
+      <div className="flex justify-end px-5 pt-5">
+        <Button onClick={handleCreateAd} className="bg-black hover:bg-gray-800 text-white">
+          Opprett annonse
+        </Button>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 m-5">
         {items.length === 0 ? (
           <p>No items found</p>
