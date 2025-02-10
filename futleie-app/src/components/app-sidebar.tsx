@@ -1,4 +1,4 @@
-import { Calendar, Home, Inbox, Search, User, LogOut } from "lucide-react"
+import { Calendar, Grid, Inbox, Search, User, LogOut } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import Cookie from "js-cookie"
 import {
@@ -14,7 +14,7 @@ import {
 
 // Menu items
 const items = [
-  { title: "Hjem", url: "/", icon: Home },
+  { title: "Galleri", url: "/", icon: Grid },
   { title: "Meldinger", url: "/messages", icon: Inbox },
   { title: "Kalender", url: "/calendar", icon: Calendar },
   { title: "Søk", url: "/search", icon: Search },
