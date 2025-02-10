@@ -3,7 +3,7 @@ import ItemCard from "@/components/item-card";
 import supabaseClient from "@/supabaseClient";
 import { Item } from "@/Types/Item";
 
-const ItemGrid: React.FC<object> = () => {
+const ItemGrid: React.FC = () => {
   const [items, setItems] = useState<Item[]>([]);
 
   /**
@@ -37,27 +37,14 @@ const ItemGrid: React.FC<object> = () => {
         {items.length === 0 ? (
           <p>No items found</p>
         ) : (
-          //TODO: Må finne en bedre måte å hente ut bildet på
           items.map((item) => {
-            console.log("Item image field:", item.image);
-            let imageUrl = "";
-            if (
-              typeof item.image === "object" &&
-              item.image &&
-              "image" in (item.image as { image: string })
-            ) {
-              imageUrl = (item.image as { image: string }).image;
-            } else if (typeof item.image === "string") {
-              try {
-                const imageObject = JSON.parse(item.image);
-                imageUrl = imageObject.image;
-              } catch (e) {
-                console.error("Error parsing image JSON:", e);
-              }
-            }
+            const imageUrl =
+              typeof item.image === "object" && item.image !== null
+                ? (item.image as { image: string }).image
+                : item.image;
             return (
               <ItemCard
-                key={item.id}
+                id={item.id}
                 title={item.title}
                 imageUrl={imageUrl}
                 owner={item.owner.username}

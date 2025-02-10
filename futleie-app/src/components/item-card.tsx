@@ -1,30 +1,38 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
-interface ItemCardProps extends React.ComponentPropsWithoutRef<"div"> {
+interface ItemCardProps {
+  id: number; // Ensure id is of type number
   title: string;
   imageUrl: string;
   owner: string;
+  className?: string;
 }
 
 const ItemCard: React.FC<ItemCardProps> = ({
   className,
+  id,
   title,
   imageUrl,
   owner,
-  ...props
 }) => {
-  console.log("Rendering ItemCard with props:", { title, imageUrl, owner });
+  console.log("Rendering ItemCard with props:", { id, title, imageUrl, owner });
 
   return (
-    <div
+    <Link
+      to={`/item/${id}`}
       className={cn("flex flex-column gap-6 justify-center", className)}
-      {...props}
     >
       <Card className="transition-shadow duration-300 ease-in-out shadow-md hover:shadow-2xl hover:scale-105 transform">
         <CardHeader>
-          <img src={imageUrl} alt="Item Image" className="w-full h-auto" />
+          <img
+            //TODO: Ikke testet om dette fungerer grunnet manglende data
+            src={`data:image/jpeg;base64,${imageUrl}`}
+            alt="Item Image"
+            className="w-full h-auto"
+          />
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-6">
@@ -37,7 +45,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
           </div>
         </CardContent>
       </Card>
-    </div>
+    </Link>
   );
 };
 
