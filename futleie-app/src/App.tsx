@@ -4,6 +4,7 @@ import supabaseClient from "./supabaseClient";
 import { User } from "./Types";
 import Cookie from "js-cookie";
 import { Button } from "./components/ui/button";
+import { CreateItemForm } from "./components/create-item-form";
 import { useNavigate } from "react-router-dom";
 
 const App: React.FC<{}> = () => {
@@ -49,29 +50,31 @@ const App: React.FC<{}> = () => {
   }
 
   return (
-    <div className="mt-4 p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md flex items-center space-x-4">
-      <div className="flex-shrink-0">
-        <img className="h-12 w-12" src={reactLogo} alt="React logo" />
-      </div>
-      <div>
-        <div className="text-xl font-medium text-black">Users</div>
-        <ul>
-          {users.map((user) => (
-            <li key={user.username}>{user.username}</li>
-          ))}
-        </ul>
-        {loggedIn && (
-          <>
-            <div className="text-green-500 mt-4">Du er innlogget</div>
-            <Button onClick={logOut}>Logg ut</Button>
-          </>
-        )}
-        {!loggedIn && (
-          <>
-            <div className="text-red-500 mt-4">Du er ikke innlogget</div>
-            <Button onClick={logIn}>Logg in</Button>
-          </>
-        )}
+    <div className="flex flex-col gap-8">
+      <div className="mt-4 p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md flex items-center space-x-4">
+        <div className="flex-shrink-0">
+          <img className="h-12 w-12" src={reactLogo} alt="React logo" />
+        </div>
+        <div>
+          <div className="text-xl font-medium text-black">Users</div>
+          <ul>
+            {users.map((user) => (
+              <li key={user.username}>{user.username}</li>
+            ))}
+          </ul>
+          {loggedIn && (
+            <>
+              <div className="text-green-500 mt-4">Du er innlogget</div>
+              <Button onClick={logOut}>Logg ut</Button>
+            </>
+          )}
+          {!loggedIn && (
+            <>
+              <div className="text-red-500 mt-4">Du er ikke innlogget</div>
+              <Button onClick={logIn}>Logg in</Button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
