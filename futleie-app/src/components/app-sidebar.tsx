@@ -1,4 +1,6 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
+import { Calendar, Home, Inbox, Search, User, LogOut } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import Cookie from "js-cookie"
 import {
   Sidebar,
   SidebarContent,
@@ -12,17 +14,26 @@ import {
 
 // Menu items
 const items = [
-  { title: "Home", url: "/", icon: Home },
-  { title: "Inbox", url: "/inbox", icon: Inbox },
-  { title: "Calendar", url: "/calendar", icon: Calendar },
-  { title: "Search", url: "/search", icon: Search },
-  { title: "Settings", url: "/settings", icon: Settings },
+  { title: "Hjem", url: "/", icon: Home },
+  { title: "Meldinger", url: "/messages", icon: Inbox },
+  { title: "Kalender", url: "/calendar", icon: Calendar },
+  { title: "Søk", url: "/search", icon: Search },
+  { title: "Profil", url: "/profile", icon: User },
 ]
 
 export function AppSidebar() {
+  const navigate = useNavigate();
+  const userCookie = Cookie.get("user");
+  const username = userCookie ? JSON.parse(userCookie).username : "";
+
+  const handleLogout = () => {
+    Cookie.remove("user");
+    navigate("/login");
+  };
+
   return (
     <Sidebar collapsible="icon">
-      <SidebarContent>
+      <SidebarContent className="flex flex-col h-full">
         <SidebarGroup>
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -40,6 +51,20 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Logout button at the bottom */}
+        {username && (
+          <div className="mt-auto mb-4">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={handleLogout}>
+                  <LogOut />
+                  <span>Logg ut: @{username}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </div>
+        )}
       </SidebarContent>
     </Sidebar>
   )
