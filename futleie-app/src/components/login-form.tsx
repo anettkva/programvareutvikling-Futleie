@@ -42,7 +42,7 @@ const LoginForm: React.FC<{}> = () => {
         Cookies.set("user", JSON.stringify(user), {
           domain: "localhost",
         });
-        navigate("/");
+        navigate("/gallery");
       }
     }
   };
