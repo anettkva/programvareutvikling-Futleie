@@ -40,37 +40,35 @@ const ItemInfo: React.FC = () => {
       } else {
         console.log("Fetched item:", data);
         setItem(data as Item);
-        console.log("Item is set to: ", data)
+        console.log("Item is set to: ", data);
       }
     };
 
     if (itemId) {
       fetchItem();
     }
-    
   }, [itemId]);
 
   useEffect(() => {
     const fetchImages = async () => {
       if (item) {
-        console.log("Fetching images")
+        console.log("Fetching images");
         const { data, error } = await supabaseClient
-        .from("Item_images")
-        .select("image_url")
-        .eq("item_id", itemId);
-        
+          .from("Item_images")
+          .select("image_url")
+          .eq("item_id", itemId);
+
         if (error) {
-          console.log("Error fetching images")
+          console.log("Error fetching images");
           return;
         }
-        const fetchedImages = data.map(image => image.image_url)
-        console.log(fetchedImages)
+        const fetchedImages = data.map((image) => image.image_url);
+        console.log(fetchedImages);
         setImages(fetchedImages);
       }
-    }
+    };
     fetchImages();
-  }, [item])
-
+  }, [itemId, item]);
 
   // TIL FILOPPLASTING:
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
@@ -80,72 +78,67 @@ const ItemInfo: React.FC = () => {
     if (image) {
       setUploadedImage(image);
     }
-  }
+  };
 
-  const uploadImageToSupabase = async (image : File) => {
+  const uploadImageToSupabase = async (image: File) => {
     const imageName = `${Date.now()}-${image.name}`;
 
-    const { data, error } = await supabaseClient.storage
-    .from('images')
-    .upload(imageName, image);
+    const { error } = await supabaseClient.storage
+      .from("images")
+      .upload(imageName, image);
 
     if (error) {
-      console.error('Upload failed:', error.message);
+      console.error("Upload failed:", error.message);
       return null;
     }
 
-    const { data: urlData } = await supabaseClient.storage.from('items').getPublicUrl(imageName);
+    const { data: urlData } = await supabaseClient.storage
+      .from("items")
+      .getPublicUrl(imageName);
     const imageUrl = urlData.publicUrl;
 
     const { error: dbError } = await supabaseClient
-    .from('Item_images')
-    .insert([{ item_id: itemId ,image_url: imageUrl }]);
+      .from("Item_images")
+      .insert([{ item_id: itemId, image_url: imageUrl }]);
 
     if (dbError) {
-      console.error('Database insert failed:', dbError.message);
+      console.error("Database insert failed:", dbError.message);
       return null;
     }
 
     return imageUrl;
-
-  }
+  };
 
   const handleImageSubmit = async () => {
     if (uploadedImage) {
       uploadImageToSupabase(uploadedImage);
     }
-  }
-  
+  };
+
   if (!item || !images) {
     return <p>Loading...</p>;
   }
 
-
-
-
   return (
     <div className="flex flex-col items-center gap-6 m-5">
-      <Carousel>
-        <CarouselContent>
-          {images.map((imageUrl, index) => (
-            <CarouselItem key={index}>
-              <img
-                //TODO: Ikke testet om dette fungerer grunnet manglende data
-                src={imageUrl}
-                alt={`Item Image ${index}`}
-                className="w-full h-auto"
-              />
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-      </Carousel>
-
       <div className="flex flex-col gap-6 w-full max-w-2xl">
-        <h1 className="text-3xl font-bold">{item.title}</h1>
-        <p className="text-xl">{item.description}</p>
         <div className="flex flex-col gap-4">
+          <Carousel className="w-full h-100">
+            <CarouselContent>
+              {images.map((imageUrl, index) => (
+                <CarouselItem key={index}>
+                  <img
+                    src={imageUrl}
+                    alt={`Item Image ${index}`}
+                    className="w-full h-100"
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
+          <h1 className="text-3xl font-bold">{item.title}</h1>
+          <p className="text-xl">{item.description}</p>
           <label className="text-lg text-gray-600">Leieperiode:</label>
-          <img src={images[0]} alt="" />
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -180,10 +173,13 @@ const ItemInfo: React.FC = () => {
         </div>
         <Button>Send forespørsel</Button>
 
-        
-        <input type="file" accept="image/*" multiple onChange={handleImageUpload} />
-        <button onClick={handleImageSubmit}>Last opp bilde</button>
-
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleImageUpload}
+        />
+        <Button onClick={handleImageSubmit}>Last opp bilde</Button>
       </div>
     </div>
   );

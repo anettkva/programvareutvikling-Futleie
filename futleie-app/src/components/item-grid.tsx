@@ -6,26 +6,36 @@ import { Item } from "@/Types/Item";
 const ItemGrid: React.FC = () => {
   const [items, setItems] = useState<Item[]>([]);
 
-  /**
-   * Hook som henter alle items fra databasen og setter dem i items state
-   * @returns void
-   */
   useEffect(() => {
     const fetchItems = async () => {
       const { data, error } = await supabaseClient.from("Items").select(`
           id,
+          created_at,
           title,
-          image,
+          description,
+          rented,
           owner_id,
-          owner: owner_id ( username )
+          owner: owner_id ( username ),
+          Item_images ( image_url )
         `);
 
       if (error) {
         console.error("Error fetching items:", error);
-      } else {
-        console.log("Fetched items:", data);
-        setItems(data);
+        return;
       }
+
+      console.log("Fetched items:", data);
+
+      const formattedItems: Item[] = data.map((item) => ({
+        ...item,
+        images:
+          item.Item_images?.map((img) => ({
+            image_url: img.image_url,
+            alt: item.title,
+          })) || [],
+      }));
+
+      setItems(formattedItems);
     };
 
     fetchItems();
@@ -37,21 +47,16 @@ const ItemGrid: React.FC = () => {
         {items.length === 0 ? (
           <p>No items found</p>
         ) : (
-          items.map((item) => {
-            const imageUrl =
-              typeof item.image === "object" && item.image !== null
-                ? (item.image as { image: string }).image
-                : item.image;
-            return (
-              <ItemCard
-                id={item.id}
-                title={item.title}
-                imageUrl={imageUrl}
-                owner={item.owner.username}
-                className="col-span-1"
-              />
-            );
-          })
+          items.map((item) => (
+            <ItemCard
+              key={item.id}
+              id={item.id}
+              title={item.title}
+              imageUrl={item.images[0]?.image_url || ""}
+              owner={item.owner.username}
+              className="col-span-1"
+            />
+          ))
         )}
       </div>
     </div>

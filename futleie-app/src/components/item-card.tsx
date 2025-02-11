@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 
 interface ItemCardProps {
-  id: number; // Ensure id is of type number
+  id: number;
   title: string;
   imageUrl: string;
   owner: string;
@@ -27,12 +27,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
     >
       <Card className="transition-shadow duration-300 ease-in-out shadow-md hover:shadow-2xl hover:scale-105 transform">
         <CardHeader>
-          <img
-            //TODO: Ikke testet om dette fungerer grunnet manglende data
-            src={`data:image/jpeg;base64,${imageUrl}`}
-            alt="Item Image"
-            className="w-full h-auto"
-          />
+          <img src={imageUrl} alt="Item Image" className="w-full h-auto" />
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-6">
