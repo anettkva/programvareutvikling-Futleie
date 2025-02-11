@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { Item } from "@/Types";
 
 interface ItemCardProps extends React.ComponentPropsWithoutRef<"div"> {
   title: string;
@@ -15,8 +16,6 @@ const ItemCard: React.FC<ItemCardProps> = ({
   owner,
   ...props
 }) => {
-  console.log("Rendering ItemCard with props:", { title, imageUrl, owner });
-
   return (
     <div
       className={cn("flex flex-column gap-6 justify-center", className)}
