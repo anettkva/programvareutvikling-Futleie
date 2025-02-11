@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Supabase from "../supabaseClient.ts";
 import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,7 +32,8 @@ const formSchema = z.object({
     }),
 });
 
-export function CreateItemForm() {
+function CreateItemForm() {
+    const navigate = useNavigate();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -82,6 +84,7 @@ export function CreateItemForm() {
                 console.error("Error uploading data:", error);
             } else {
                 console.log("Data uploaded successfully:", data);
+                navigate('/');
             }
         }
 
@@ -145,3 +148,5 @@ export function CreateItemForm() {
         </Form>
     );
 }
+
+export { CreateItemForm };
