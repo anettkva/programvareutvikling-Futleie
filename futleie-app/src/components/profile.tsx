@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Card,
     CardHeader,
@@ -6,26 +6,84 @@ import {
     CardTitle,
     CardDescription,
 } from "@/components/ui/card";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import ItemGrid from "./item-grid.tsx";
+import Cookies from "js-cookie";
+import Supabase from "../supabaseClient.ts";
+import { z } from "zod";
+
+const formSchema = z.object({
+    username: z.string().min(2, {
+        message: "Username must be at least 2 characters.",
+    }),
+    email: z.string().email({
+        message: "Description must be at least 10 characters.",
+    }),
+});
 
 const Profile: React.FC = () => {
+    const [userId, setUserId] = useState<Number | undefined>(undefined);
     const [username, setUsername] = useState("[Brukernavn]");
-    const [email, setEmail] = useState("[epost@example.com]");
+    const [email, setEmail] = useState("epost@example.com");
+    useEffect(() => {
+        async function getUser() {
+            const userCookie = Cookies.get("user");
+            if (!userCookie || userCookie.length === 0) {
+                console.error("User not logged in");
+            }
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        // Example of updating user info in the database
-        // await fetch("/api/update-profile", {
-        //   method: "POST",
-        //   headers: { "Content-Type": "application/json" },
-        //   body: JSON.stringify({ username, email }),
-        // })
+            const user = JSON.parse(userCookie as string);
+
+            const { data, error } = await Supabase.from("Users")
+                .select("id, username, email")
+                .eq("username", user.username);
+
+            if (data) {
+                setUserId(data[0].id as Number);
+                setUsername(data[0].username as string);
+                setEmail(data[0].email as string);
+            }
+            if (error) {
+                console.error("Error fetching user id:", error);
+            }
+        }
+        getUser();
+    }, []);
+
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            username: username,
+            email: email,
+        },
+    });
+
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        async function uploadToSupabase(values: z.infer<typeof formSchema>) {
+            const { data, error } = await Supabase.from("Users")
+                .update([
+                    {
+                        username: username,
+                        email: email,
+                    },
+                ])
+                .eq("id", userId);
+
+            if (error) {
+                console.error("Error uploading data:", error);
+            } else {
+                console.log("Data uploaded successfully:", data);
+            }
+        }
+
+        uploadToSupabase(values);
     };
 
     return (
         <Card className="max-w-md mx-auto mt-4 p-4">
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-2xl">Profil</CardTitle>
                     <CardDescription>
@@ -40,6 +98,7 @@ const Profile: React.FC = () => {
                             </label>
                             <input
                                 type="text"
+                                name="username"
                                 className="w-full border rounded-md px-3 py-2 mb-2"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
@@ -49,6 +108,7 @@ const Profile: React.FC = () => {
                             </label>
                             <input
                                 type="email"
+                                name="email"
                                 className="w-full border rounded-md px-3 py-2 mb-4"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
