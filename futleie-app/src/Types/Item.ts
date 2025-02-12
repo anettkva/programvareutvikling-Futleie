@@ -7,8 +7,6 @@ export type Item = {
   owner_id: number;
   renter_id: number;
   return_date: string;
-  image: string;
-  owner: {
-    username: string;
-  };
+  owner?: string;
+  images?: string[];
 };

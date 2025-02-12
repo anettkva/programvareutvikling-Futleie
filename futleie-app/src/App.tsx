@@ -4,7 +4,6 @@ import Page from "./app/login/page";
 import Signup from "./app/signup/page";
 import Gallery from "./pages/gallery";
 import CreateAdPage from "./pages/create-ad";
-import ProfilePage from "./pages/profile-page";
 import Cookie from "js-cookie";
 
 const App: React.FC<{}> = () => {
@@ -39,14 +38,6 @@ const App: React.FC<{}> = () => {
                 }
             />
             <Route path="/create-ad" element={<CreateAdPage />} />
-            <Route
-                path="/profile"
-                element={
-                    <Layout>
-                        <ProfilePage />
-                    </Layout>
-                }
-            ></Route>
         </Routes>
     );
 };
