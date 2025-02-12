@@ -127,7 +127,6 @@ const Profile: React.FC = () => {
                     </div>
                 </CardContent>
             </form>
-            <ItemGrid />
         </Card>
     );
 };

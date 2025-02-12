@@ -5,6 +5,7 @@ import Signup from "./app/signup/page";
 import Gallery from "./pages/gallery";
 import CreateAdPage from "./pages/create-ad";
 import Cookie from "js-cookie";
+import ProfilePage from "./pages/profile-page";
 
 const App: React.FC<{}> = () => {
     const location = useLocation();
@@ -38,6 +39,14 @@ const App: React.FC<{}> = () => {
                 }
             />
             <Route path="/create-ad" element={<CreateAdPage />} />
+            <Route
+                path="/profile"
+                element={
+                    <Layout>
+                        <ProfilePage />
+                    </Layout>
+                }
+            ></Route>
         </Routes>
     );
 };
