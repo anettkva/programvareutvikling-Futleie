@@ -1,90 +1,54 @@
-import { useState, useEffect } from "react";
-import reactLogo from "./assets/react.svg";
-import supabaseClient from "./supabaseClient";
-import { User } from "./Types";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import Layout from "./components/layout";
+import Page from "./app/login/page";
+import Signup from "./app/signup/page";
+import Gallery from "./pages/gallery";
+import CreateAdPage from "./pages/create-ad";
+import ProfilePage from "./pages/profile-page";
 import Cookie from "js-cookie";
-import { Button } from "./components/ui/button";
-import { CreateItemForm } from "./components/create-item-form";
-import { useNavigate } from "react-router-dom";
 
 const App: React.FC<{}> = () => {
-    const [users, setUsers] = useState<User[]>([]);
-    const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
-    const navigate = useNavigate();
+    const location = useLocation();
+    const userCookie = Cookie.get("user");
+    const isAuthenticated = userCookie && userCookie.length > 0;
 
-    useEffect(() => {
-        getUsers();
-        checkLogin();
-    }, []);
+    // Allow access to login and signup pages even when not authenticated
+    if (
+        !isAuthenticated &&
+        !["/login", "/signup"].includes(location.pathname)
+    ) {
+        return <Navigate to="/login" replace />;
+    }
 
-    async function getUsers() {
-        const { data } = await supabaseClient.from("Users").select();
-        if (data) {
-            setUsers(data as User[]);
-        }
-    }
-    async function checkLogin() {
-        const userCookie = Cookie.get("user");
-        if (userCookie != undefined && userCookie.length != 0) {
-            const cookie = userCookie ? JSON.parse(userCookie) : null;
-            const { data } = await supabaseClient
-                .from("Users")
-                .select("username, password_hash")
-                .eq("username", cookie.username)
-                .eq("password_hash", cookie.password_hash);
-            if (data) {
-                if (data[0]) {
-                    setLoggedIn(true);
-                    return;
-                }
-                setLoggedIn(false);
-            }
-        }
-    }
-    function logOut() {
-        Cookie.remove("user");
-        window.location.reload();
-    }
-    function logIn() {
-        navigate("/login");
+    // Redirect authenticated users away from login/signup to gallery
+    if (isAuthenticated && ["/login", "/signup"].includes(location.pathname)) {
+        return <Navigate to="/gallery" replace />;
     }
 
     return (
-        <div className="flex flex-col gap-8">
-            <div className="mt-4 p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md flex items-center space-x-4">
-                <div className="flex-shrink-0">
-                    <img
-                        className="h-12 w-12"
-                        src={reactLogo}
-                        alt="React logo"
-                    />
-                </div>
-                <div>
-                    <div className="text-xl font-medium text-black">Users</div>
-                    <ul>
-                        {users.map((user) => (
-                            <li key={user.username}>{user.username}</li>
-                        ))}
-                    </ul>
-                    {loggedIn && (
-                        <>
-                            <div className="text-green-500 mt-4">
-                                Du er innlogget
-                            </div>
-                            <Button onClick={logOut}>Logg ut</Button>
-                        </>
-                    )}
-                    {!loggedIn && (
-                        <>
-                            <div className="text-red-500 mt-4">
-                                Du er ikke innlogget
-                            </div>
-                            <Button onClick={logIn}>Logg in</Button>
-                        </>
-                    )}
-                </div>
-            </div>
-        </div>
+        <Routes>
+            <Route path="/" element={<Navigate to="/gallery" replace />} />
+            <Route path="/login" element={<Page />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route
+                path="/gallery"
+                element={
+                    <Layout>
+                        <Gallery />
+                    </Layout>
+                }
+            />
+            <Route path="/create-ad" element={<CreateAdPage />} />
+            <Route
+                path="/profile"
+                element={
+                    <Layout>
+                        <ProfilePage />
+                    </Layout>
+                }
+            ></Route>
+        </Routes>
     );
 };
+
 export default App;

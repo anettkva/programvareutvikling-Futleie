@@ -6,6 +6,9 @@ import {
     CardTitle,
     CardDescription,
 } from "@/components/ui/card";
+
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -82,7 +85,7 @@ const Profile: React.FC = () => {
     };
 
     return (
-        <Card className="max-w-md mx-auto mt-4 p-4">
+        <Card className="max-w-xl ml-0 mt-4 p-4">
             <form onSubmit={form.handleSubmit(onSubmit)}>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-2xl">Profil</CardTitle>
@@ -93,30 +96,30 @@ const Profile: React.FC = () => {
                 <CardContent>
                     <div className="flex flex-col md:flex-row items-center gap-4">
                         <div className="w-full">
-                            <label className="block text-sm font-medium mb-1">
+                            <Label className="block text-sm font-medium mb-1">
                                 Brukernavn
-                            </label>
-                            <input
+                            </Label>
+                            <Input
                                 type="text"
                                 name="username"
-                                className="w-full border rounded-md px-3 py-2 mb-2"
+                                className="max-w-md border rounded-md px-3 py-2 mb-2"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                             />
-                            <label className="block text-sm font-medium mb-1">
+                            <Label className="block text-sm font-medium mb-1">
                                 E-post
-                            </label>
-                            <input
+                            </Label>
+                            <Input
                                 type="email"
                                 name="email"
-                                className="w-full border rounded-md px-3 py-2 mb-4"
+                                className="max-w-md border rounded-md px-3 py-2 mb-4"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
                             <Button
                                 type="submit"
                                 variant="outline"
-                                className="md:mt-2"
+                                className="md:mt-2 bg-black text-white"
                             >
                                 Oppdater
                             </Button>
