@@ -10,29 +10,23 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import ItemGrid from "./item-grid.tsx";
 import Cookies from "js-cookie";
 import Supabase from "../supabaseClient.ts";
-import { z } from "zod";
-
-const formSchema = z.object({
-    username: z.string().min(2, {
-        message: "Username must be at least 2 characters.",
-    }),
-    email: z.string().email({
-        message: "Description must be at least 10 characters.",
-    }),
-});
+import { User } from "../Types/User.ts";
+import CryptoJS from "crypto-js";
 
 const Profile: React.FC = () => {
     const [userId, setUserId] = useState<Number | undefined>(undefined);
     const [username, setUsername] = useState("[Brukernavn]");
     const [email, setEmail] = useState("epost@example.com");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+
     useEffect(() => {
         async function getUser() {
             const userCookie = Cookies.get("user");
+
             if (!userCookie || userCookie.length === 0) {
                 console.error("User not logged in");
             }
@@ -55,38 +49,49 @@ const Profile: React.FC = () => {
         getUser();
     }, []);
 
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            username: username,
-            email: email,
-        },
-    });
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        async function uploadToSupabase() {
+            const requestBody: any = {
+                username,
+                email,
+            };
+            // Oppdater kun passord hvis nye felt matcher og ikke er tomme
+            if (
+                newPassword &&
+                confirmPassword &&
+                newPassword === confirmPassword
+            ) {
+                requestBody.password_hash = CryptoJS.SHA256(
+                    newPassword
+                ).toString(CryptoJS.enc.Hex);
+            }
 
-    const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        async function uploadToSupabase(values: z.infer<typeof formSchema>) {
             const { data, error } = await Supabase.from("Users")
-                .update([
-                    {
-                        username: username,
-                        email: email,
-                    },
-                ])
-                .eq("id", userId);
+                .update([requestBody])
+                .eq("id", userId)
+                .select("username, password_hash");
 
             if (error) {
-                console.error("Error uploading data:", error);
             } else {
-                console.log("Data uploaded successfully:", data);
+                const user = data[0] as User;
+                if (user === undefined) {
+                    alert("Feil brukernavn eller passord");
+                    return;
+                }
+                Cookies.set("user", JSON.stringify(user), {
+                    domain: "localhost",
+                });
+                window.location.reload();
             }
         }
 
-        uploadToSupabase(values);
+        uploadToSupabase();
     };
 
     return (
         <Card className="max-w-xl ml-0 mt-4 p-4">
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form onSubmit={handleSubmit}>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-2xl">Profil</CardTitle>
                     <CardDescription>
@@ -115,6 +120,26 @@ const Profile: React.FC = () => {
                                 className="max-w-md border rounded-md px-3 py-2 mb-4"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                            />
+                            <Label className="block text-sm font-medium mb-1">
+                                Nytt passord
+                            </Label>
+                            <Input
+                                type="password"
+                                className="max-w-md border rounded-md px-3 py-2 mb-2"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                            />
+                            <Label className="block text-sm font-medium mb-1">
+                                Bekreft passord
+                            </Label>
+                            <Input
+                                type="password"
+                                className="max-w-md border rounded-md px-3 py-2 mb-4"
+                                value={confirmPassword}
+                                onChange={(e) =>
+                                    setConfirmPassword(e.target.value)
+                                }
                             />
                             <Button
                                 type="submit"
