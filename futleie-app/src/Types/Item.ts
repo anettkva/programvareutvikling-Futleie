@@ -5,10 +5,10 @@ export type Item = {
   description: string;
   rented: boolean;
   owner_id: number;
-  owner: {
+  owner?: {
     username: string;
   };
-  images: {
+  images?: {
     image_url: string;
     url: string;
     alt: string;

@@ -71,7 +71,7 @@ const Signup: React.FC<{}> = () => {
                                 <Input
                                     id="username"
                                     type="text"
-                                    placeholder="Brukernavn"
+                                    placeholder="JohnSmith"
                                     required
                                     onChange={(e) => {
                                         setUname(e.target.value);
@@ -84,7 +84,7 @@ const Signup: React.FC<{}> = () => {
                                 <Input
                                     id="email"
                                     type="email"
-                                    placeholder="m@example.com"
+                                    placeholder="john.smith@example.com"
                                     required
                                     onChange={(e) => {
                                         setMail(e.target.value);
@@ -99,6 +99,7 @@ const Signup: React.FC<{}> = () => {
                                 <Input
                                     id="password"
                                     type="password"
+                                    placeholder="***********"
                                     required
                                     onChange={(e) => {
                                         setPassword(e.target.value);

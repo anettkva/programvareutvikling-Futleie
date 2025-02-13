@@ -42,7 +42,7 @@ const LoginForm: React.FC<{}> = () => {
         Cookies.set("user", JSON.stringify(user), {
           domain: "localhost",
         });
-        navigate("/");
+        navigate("/gallery");
       }
     }
   };
@@ -64,7 +64,7 @@ const LoginForm: React.FC<{}> = () => {
                 <Input
                   id="username"
                   type="username"
-                  placeholder="Brukernavn"
+                  placeholder=""
                   required
                   onChange={(e) => setUsername(e.target.value)}
                   autoComplete="off"
@@ -83,6 +83,7 @@ const LoginForm: React.FC<{}> = () => {
                 <Input
                   id="password"
                   type="password"
+                  placeholder="***********"
                   required
                   onChange={(e) => {
                     setPassword(e.target.value);
@@ -97,9 +98,9 @@ const LoginForm: React.FC<{}> = () => {
               >
                 Logg inn
               </Button>
-              <Button variant="outline" className="w-full">
+              {/* <Button variant="outline" className="w-full">
                 Logg inn med Google
-              </Button>
+              </Button> */}
             </div>
             <div className="mt-4 text-center text-sm">
               Har du ikke bruker?{" "}
