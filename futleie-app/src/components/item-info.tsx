@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import supabaseClient from "@/supabaseClient";
 import { Item } from "@/Types/Item";
@@ -70,51 +70,6 @@ const ItemInfo: React.FC = () => {
     fetchImages();
   }, [itemId, item]);
 
-  // TIL FILOPPLASTING:
-  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
-
-  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    const image = e.target.files?.[0];
-    if (image) {
-      setUploadedImage(image);
-    }
-  };
-
-  const uploadImageToSupabase = async (image: File) => {
-    const imageName = `${Date.now()}-${image.name}`;
-
-    const { error } = await supabaseClient.storage
-      .from("images")
-      .upload(imageName, image);
-
-    if (error) {
-      console.error("Upload failed:", error.message);
-      return null;
-    }
-
-    const { data: urlData } = await supabaseClient.storage
-      .from("items")
-      .getPublicUrl(imageName);
-    const imageUrl = urlData.publicUrl;
-
-    const { error: dbError } = await supabaseClient
-      .from("Item_images")
-      .insert([{ item_id: itemId, image_url: imageUrl }]);
-
-    if (dbError) {
-      console.error("Database insert failed:", dbError.message);
-      return null;
-    }
-
-    return imageUrl;
-  };
-
-  const handleImageSubmit = async () => {
-    if (uploadedImage) {
-      uploadImageToSupabase(uploadedImage);
-    }
-  };
-
   if (!item || !images) {
     return <p>Loading...</p>;
   }
@@ -172,14 +127,6 @@ const ItemInfo: React.FC = () => {
           </Popover>
         </div>
         <Button>Send forespørsel</Button>
-
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={handleImageUpload}
-        />
-        <Button onClick={handleImageSubmit}>Last opp bilde</Button>
       </div>
     </div>
   );

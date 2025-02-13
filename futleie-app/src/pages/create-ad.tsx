@@ -1,6 +1,6 @@
-import React from 'react';
-import Layout from '@/components/layout';
-import { CreateItemForm } from '@/components/create-item-form';
+import React from "react";
+import Layout from "@/components/layout";
+import CreateItemForm from "@/components/create-item-form";
 
 const CreateAdPage: React.FC = () => {
   return (
