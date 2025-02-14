@@ -3,12 +3,15 @@ import ItemCard from "@/components/item-card";
 import supabaseClient from "@/supabaseClient";
 import { Item } from "@/Types/Item";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , useLocation} from "react-router-dom";
 import { putImagesInItems, putOwnersInItems } from "./itemfilling";
+import Cookie from "js-cookie"
+import Cookies from "js-cookie";
 
 const ItemGrid: React.FC = () => {
   const [items, setItems] = useState<Item[] | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Ref-er som brukes for å sørge for at hookene stopper når de skal
   const setImageLimiter = useRef<boolean>(false);
@@ -20,26 +23,38 @@ const ItemGrid: React.FC = () => {
 
   // Hook som henter alle items fra databasen og setter dem i items state
   useEffect(() => {
-    const fetchItems = async () => {
-      const { data, error } = await supabaseClient.from("Items").select(`
-          id,
-          created_at,
-          title,
-          description,
-          rented,
-          owner_id,
-          owner: owner_id ( username ),
-          images: Item_images ( image_url )
-        `);
-
-      if (error) {
-        console.error("Error fetching items:", error);
-      } else {
-        setItems(data);
+    const fetchItems = async (id?: number) => {
+      if (id) {
+        const { data, error } = await supabaseClient.from("Items").select().eq("owner_id", id);
+  
+        if (error) {
+          console.error("Error fetching items:", error);
+        } else {
+          setItems(data);
+        }
+        return;
       }
-    };
-
-    fetchItems();
+      const { data, error } = await supabaseClient.from("Items").select();
+  
+        if (error) {
+          console.error("Error fetching items:", error);
+        } else {
+          setItems(data);
+        }
+        
+      };
+      
+      console.log(location.pathname)
+      if (location.pathname === "/profile") {
+        const cookie = Cookies.get("user");
+        console.log(cookie);
+        if (cookie) {
+          fetchItems(JSON.parse(cookie).id);
+        }
+      }
+      else {
+        fetchItems();
+      }
   }, []);
 
   // Setter bilder inn i itemsene som ble fetchet i hooken ovenfor
@@ -50,8 +65,10 @@ const ItemGrid: React.FC = () => {
     putImagesInItems(items, setItems);
 
     // Oppdaterer Ref-en slik at hooken slutter å kjøre når items har fått inn bilder
-    if (items && items[0].images) {
-      setImageLimiter.current = true;
+    if (items && items[0]) {
+      if (items[0].images) {
+        setImageLimiter.current = true;
+      }
     }
   }, [items]);
 
@@ -64,8 +81,10 @@ const ItemGrid: React.FC = () => {
     putOwnersInItems(items, setItems);
 
     // Oppdaterer Ref-en slik at hooken slutter å kjøre når items har fått inn eiere
-    if (items && items[0].owner) {
-      setOwnerLimiter.current = true;
+    if (items && items[0]) {
+      if (items[0].owner) {
+        setOwnerLimiter.current = true;
+      }
     }
   }, [items]);
 
