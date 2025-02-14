@@ -26,7 +26,7 @@ const LoginForm: React.FC<{}> = () => {
     if (username && password) {
       const { data } = await supabaseClient
         .from("Users")
-        .select("username, password_hash")
+        .select("username, password_hash, id")
         .eq("username", username)
         .eq(
           "password_hash",
