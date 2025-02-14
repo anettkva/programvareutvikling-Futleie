@@ -15,7 +15,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useParams } from "react-router-dom";
 import Cookies from "js-cookie";
-import { url } from "inspector";
 
 const formSchema = z.object({
     title: z.string().nonempty({ message: "Tittel kreves" }),
@@ -46,7 +45,6 @@ function ChangeItemForm() {
     // Henter eksisterende data for annonsen
     useEffect(() => {
         async function fetchItem() {
-            // Hent info fra Items
             const { data, error } = await supabaseClient
                 .from("Items")
                 .select("title, description")
@@ -67,7 +65,6 @@ function ChangeItemForm() {
             }
         }
 
-        // Hent tilknyttede bilder
         async function fetchImages() {
             const { data, error } = await supabaseClient
                 .from("Item_images")
@@ -128,7 +125,6 @@ function ChangeItemForm() {
             return;
         }
 
-        // Fjern bildet fra state
         setImages((prev) => prev.filter((img) => img.id !== imageId));
     };
 
@@ -139,7 +135,6 @@ function ChangeItemForm() {
             return;
         }
 
-        // Oppdaterer selve annonsen
         const { data: itemData, error: itemError } = await supabaseClient
             .from("Items")
             .update({
@@ -155,7 +150,6 @@ function ChangeItemForm() {
             return;
         }
 
-        // Laster opp eventuelt nytt bilde
         if (uploadedImage) {
             const imageUrl = await uploadImageToSupabase(uploadedImage);
             if (imageUrl) {
@@ -235,7 +229,6 @@ function ChangeItemForm() {
                 </form>
             </Form>
 
-            {/* Viser eksisterende bilder med mulighet for sletting */}
             <div className="mt-4">
                 <h2 className="text-lg font-semibold mb-2">
                     Eksisterende bilder

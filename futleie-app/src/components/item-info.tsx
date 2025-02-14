@@ -84,6 +84,23 @@ const ItemInfo: React.FC = () => {
 
     const isOwner = item.owner_id === currentUserId;
 
+    function deleteAd() {
+        const deleteItem = async () => {
+            const { error } = await supabaseClient
+                .from("Items")
+                .delete()
+                .eq("id", itemId);
+
+            if (error) {
+                console.error("Error deleting item:", error);
+            } else {
+                navigate("/");
+            }
+        };
+
+        deleteItem();
+    }
+
     return (
         <div className="flex flex-col items-center gap-6 m-5">
             <div className="flex flex-col gap-6 w-full max-w-2xl">
@@ -106,12 +123,19 @@ const ItemInfo: React.FC = () => {
 
                     {isOwner ? (
                         // Hvis eier
-                        <Button
-                            onClick={() => navigate(`/change-ad/${item.id}`)}
-                            variant="outline"
-                        >
-                            Endre annonse
-                        </Button>
+                        <div className="flex gap-4">
+                            <Button
+                                onClick={() =>
+                                    navigate(`/change-ad/${item.id}`)
+                                }
+                                variant="outline"
+                            >
+                                Endre annonse
+                            </Button>
+                            <Button variant="destructive" onClick={deleteAd}>
+                                Slett annonse
+                            </Button>
+                        </div>
                     ) : (
                         // Hvis ikke eier
                         <>
