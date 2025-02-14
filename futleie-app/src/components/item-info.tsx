@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import supabaseClient from "@/supabaseClient";
 import { Item } from "@/Types/Item";
 import {
@@ -16,6 +16,7 @@ import "react-day-picker/dist/style.css";
 import { Carousel, CarouselContent, CarouselItem } from "./ui/carousel";
 
 const ItemInfo: React.FC = () => {
+    const navigate = useNavigate();
     const { itemId } = useParams<{ itemId: string }>();
     const [item, setItem] = useState<Item | null>(null);
     const [images, setImages] = useState<Array<string> | null>(null);
@@ -105,7 +106,12 @@ const ItemInfo: React.FC = () => {
 
                     {isOwner ? (
                         // Hvis eier
-                        <Button variant="outline">Endre annonse</Button>
+                        <Button
+                            onClick={() => navigate(`/change-ad/${item.id}`)}
+                            variant="outline"
+                        >
+                            Endre annonse
+                        </Button>
                     ) : (
                         // Hvis ikke eier
                         <>
