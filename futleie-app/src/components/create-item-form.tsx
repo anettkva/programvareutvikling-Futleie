@@ -1,35 +1,25 @@
-"use client";
-
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import Supabase from "../supabaseClient.ts";
-import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
-
-import { Button } from "@/components/ui/button";
+import supabaseClient from "@/supabaseClient";
 import {
     Form,
-    FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
+    FormControl,
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 const formSchema = z.object({
-    title: z.string().min(2, {
-        message: "Title must be at least 2 characters.",
-    }),
-    description: z.string().min(10, {
-        message: "Description must be at least 10 characters.",
-    }),
-    image: z.string().url({
-        message: "Please enter a valid image URL.",
-    }),
+    title: z.string().nonempty({ message: "Title is required" }),
+    description: z.string().nonempty({ message: "Description is required" }),
+    image: z.string(),
 });
 
 function CreateItemForm() {
@@ -43,52 +33,79 @@ function CreateItemForm() {
         },
     });
 
-    async function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values
-        console.log(values);
+    const [uploadedImage, setUploadedImage] = useState<File | null>(null);
 
+    const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
+        const image = e.target.files?.[0];
+        if (image) {
+            setUploadedImage(image);
+        }
+    };
+
+    const uploadImageToSupabase = async (image: File) => {
+        const imageName = `${Date.now()}-${image.name}`;
+
+        const { error } = await supabaseClient.storage
+            .from("images")
+            .upload(imageName, image);
+
+        if (error) {
+            console.error("Upload failed:", error.message);
+            return null;
+        }
+
+        const { data: urlData } = await supabaseClient.storage
+            .from("images")
+            .getPublicUrl(imageName);
+        const imageUrl = urlData.publicUrl;
+
+        return imageUrl;
+    };
+
+    async function onSubmit(values: z.infer<typeof formSchema>) {
         const userCookie = Cookies.get("user");
         if (!userCookie || userCookie.length === 0) {
             console.error("User not logged in");
             return;
         }
 
-        const user = JSON.parse(userCookie);
+        const userId = JSON.parse(userCookie).id;
 
-        let userId: Number | undefined = undefined;
-        const { data, error } = await Supabase.from("Users")
-            .select("id")
-            .eq("username", user.username);
-
-        if (data) {
-            userId = data[0].id as Number;
-        }
-        if (error) {
-            console.error("Error fetching user id:", error);
-            return;
-        }
-
-        console.log(user);
-        console.log(userId);
-        async function uploadToSupabase(values: z.infer<typeof formSchema>) {
-            const { data, error } = await Supabase.from("Items").insert([
+        const { data: itemData, error: itemError } = await supabaseClient
+            .from("Items")
+            .insert([
                 {
                     title: values.title,
                     description: values.description,
-                    image: values.image,
                     owner_id: userId,
                 },
-            ]);
+            ])
+            .select()
+            .single();
 
-            if (error) {
-                console.error("Error uploading data:", error);
-            } else {
-                console.log("Data uploaded successfully:", data);
-                navigate('/');
+        if (itemError) {
+            console.error("Error uploading data:", itemError);
+            return;
+        }
+
+        const itemId = itemData.id;
+
+        if (uploadedImage) {
+            const imageUrl = await uploadImageToSupabase(uploadedImage);
+            if (imageUrl) {
+                const { error: imageError } = await supabaseClient
+                    .from("Item_images")
+                    .insert([{ item_id: itemId, image_url: imageUrl }]);
+
+                if (imageError) {
+                    console.error("Error uploading image data:", imageError);
+                    return;
+                }
             }
         }
 
-        uploadToSupabase(values);
+        console.log("Data uploaded successfully:", itemData);
+        navigate("/");
     }
 
     return (
@@ -99,12 +116,9 @@ function CreateItemForm() {
                     name="title"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Tittel</FormLabel>
+                            <FormLabel>Title</FormLabel>
                             <FormControl>
-                                <Input
-                                    placeholder="Skriv inn tiitel"
-                                    {...field}
-                                />
+                                <Input placeholder="Enter title" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -115,10 +129,10 @@ function CreateItemForm() {
                     name="description"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Beskrivelse</FormLabel>
+                            <FormLabel>Description</FormLabel>
                             <FormControl>
-                                <Textarea
-                                    placeholder="Forklar litt om tingen du vil leie ut"
+                                <Input
+                                    placeholder="Describe the item you want to rent out"
                                     className="min-h-[100px]"
                                     {...field}
                                 />
@@ -130,23 +144,24 @@ function CreateItemForm() {
                 <FormField
                     control={form.control}
                     name="image"
-                    render={({ field }) => (
+                    render={() => (
                         <FormItem>
-                            <FormLabel>Bilde</FormLabel>
+                            <FormLabel>Image</FormLabel>
                             <FormControl>
                                 <Input
-                                    placeholder="Skriv inn bilde-URL"
-                                    {...field}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
                                 />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
-                <Button type="submit">Opprett annonse</Button>
+                <Button type="submit">Upload Ad</Button>
             </form>
         </Form>
     );
 }
 
-export { CreateItemForm };
+export default CreateItemForm;

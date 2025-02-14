@@ -1,25 +1,29 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Item } from "@/Types";
+import { Link } from "react-router-dom";
 
-interface ItemCardProps extends React.ComponentPropsWithoutRef<"div"> {
+interface ItemCardProps {
+  id: number;
   title: string;
   imageUrl: string;
   owner: string;
+  className?: string;
 }
 
 const ItemCard: React.FC<ItemCardProps> = ({
   className,
+  id,
   title,
   imageUrl,
   owner,
-  ...props
 }) => {
+  console.log("Rendering ItemCard with props:", { id, title, imageUrl, owner });
+
   return (
-    <div
+    <Link
+      to={`/item/${id}`}
       className={cn("flex flex-column gap-6 justify-center", className)}
-      {...props}
     >
       <Card className="transition-shadow duration-300 ease-in-out shadow-md hover:shadow-2xl hover:scale-105 transform">
         <CardHeader>
@@ -36,7 +40,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
           </div>
         </CardContent>
       </Card>
-    </div>
+    </Link>
   );
 };
 
