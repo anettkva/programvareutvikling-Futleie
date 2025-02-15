@@ -45,7 +45,14 @@ const App: React.FC<{}> = () => {
           </Layout>
         }
       />
-      <Route path="/item/:itemId" element={<ItemInfo />} />
+      <Route
+        path="/item/:itemId"
+        element={
+          <Layout>
+            <ItemInfo />
+          </Layout>
+        }
+      />
     </Routes>
   );
 };
