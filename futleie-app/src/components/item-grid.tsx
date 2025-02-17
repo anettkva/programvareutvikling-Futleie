@@ -15,7 +15,7 @@ const ItemGrid: React.FC = () => {
 
   // Ref-er som brukes for å sørge for at hookene stopper når de skal
   const setImageLimiter = useRef<boolean>(false);
-  const setOwnerLimiter = useRef<boolean>(false);
+  const setOwnerLimiter = useRef<boolean>(true);
 
   const handleCreateAd = () => {
     navigate("/create-ad");
@@ -68,6 +68,7 @@ const ItemGrid: React.FC = () => {
     if (items && items[0]) {
       if (items[0].images) {
         setImageLimiter.current = true;
+        setOwnerLimiter.current = false;
       }
     }
   }, [items]);
