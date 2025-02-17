@@ -1,4 +1,4 @@
-import { Calendar, Grid, Inbox, Search, User, LogOut } from "lucide-react"
+import { Inbox, Search, User, LogOut } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import Cookie from "js-cookie"
 import {
@@ -12,9 +12,10 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
+import logoFutleie from "@/assets/logoFutleie.svg"
+
 // Menu items
 const items = [
-  { title: "Galleri", url: "/", icon: Grid },
   { title: "Meldinger", url: "/messages", icon: Inbox },
   { title: "Søk", url: "/search", icon: Search },
   { title: "Profil", url: "/profile", icon: User },
@@ -34,9 +35,13 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent className="flex flex-col h-full">
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupContent className="-mt-8">
             <SidebarMenu>
+              <div className="flex items-center justify-left w-full -mb-8 ml-1 ">
+                <a href="/">
+                  <img src={logoFutleie} alt="Futleie" className="w-32 h-32" />
+                </a>
+              </div>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>

@@ -9,6 +9,8 @@ import ProfilePage from "./pages/profile-page";
 import ItemInfo from "./components/item-info";
 import ChangeItemForm from "./components/change-item-form";
 import ChangeAd from "./pages/change-ad";
+import Search from "./pages/search";
+import Messages from "./pages/messages";
 
 const App: React.FC<{}> = () => {
     const location = useLocation();
@@ -63,6 +65,22 @@ const App: React.FC<{}> = () => {
                 element={
                     <Layout>
                         <ChangeItemForm />
+                    </Layout>
+                }
+            />
+            <Route
+                path="/search"
+                element={
+                    <Layout>
+                        <Search />
+                    </Layout>
+                }
+            />
+            <Route
+                path="/messages"
+                element={
+                    <Layout>
+                        <Messages />
                     </Layout>
                 }
             />
