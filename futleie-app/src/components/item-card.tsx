@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 
@@ -23,13 +24,26 @@ const ItemCard: React.FC<ItemCardProps> = ({
             to={`/item/${id}`}
             className={cn("flex flex-column gap-6 justify-center", className)}
         >
-            <Card className="transition-shadow duration-300 ease-in-out shadow-md hover:shadow-2xl hover:scale-105 transform">
+            <Card className="w-80 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg hover:scale-[1.03] transform">
                 <CardHeader>
-                    <img
-                        src={imageUrl}
-                        alt="Item Image"
-                        className="w-full h-auto"
-                    />
+                    <div className="w-full h-28 bg-gray-100 relative overflow-hidden">
+                        {imageUrl ? (
+                            <>
+                                <img
+                                    src={imageUrl}
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                    style={{ opacity: 0 }}
+                                    onLoad={(e) => {
+                                        (e.target as HTMLImageElement).style.opacity = '1';
+                                    }}
+                                />
+                                <Skeleton className="absolute inset-0 -z-10" />
+                            </>
+                        ) : (
+                            <Skeleton className="w-full h-full" />
+                        )}
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-col gap-6">
