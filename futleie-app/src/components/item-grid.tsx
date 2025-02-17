@@ -112,7 +112,7 @@ const ItemGrid: React.FC = () => {
                     ? item.images[0]
                     : ""
                 }
-                owner={item.owner ? item.owner.username : ""}
+                owner={item.owner ? item.owner : ""}
                 className="col-span-1"
               />
             );

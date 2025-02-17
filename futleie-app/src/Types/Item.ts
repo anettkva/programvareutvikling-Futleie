@@ -5,8 +5,6 @@ export type Item = {
   description: string;
   rented: boolean;
   owner_id: number;
-  owner: {
-    username: string;
-  };
+  owner: string;
   images: string[]
 };
