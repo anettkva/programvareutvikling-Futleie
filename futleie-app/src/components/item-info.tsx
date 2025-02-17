@@ -105,15 +105,17 @@ const ItemInfo: React.FC = () => {
         <div className="flex flex-col items-center gap-6 m-5">
             <div className="flex flex-col gap-6 w-full max-w-2xl">
                 <div className="flex flex-col gap-4">
-                    <Carousel className="w-full h-100">
+                    <Carousel className="w-full max-w-4xl mx-auto">
                         <CarouselContent>
                             {images.map((imageUrl, index) => (
                                 <CarouselItem key={index}>
-                                    <img
-                                        src={imageUrl}
-                                        alt={`Item Image ${index}`}
-                                        className="w-full h-100"
-                                    />
+                                    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg">
+                                        <img
+                                            src={imageUrl}
+                                            alt={`Item Image ${index}`}
+                                            className="object-cover w-full h-full"
+                                        />
+                                    </div>
                                 </CarouselItem>
                             ))}
                         </CarouselContent>
