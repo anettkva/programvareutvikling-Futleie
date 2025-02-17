@@ -12,7 +12,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 import "react-day-picker/dist/style.css";
-import { Carousel, CarouselContent, CarouselItem } from "./ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "./ui/carousel";
 import Cookies from "js-cookie";
 
 const ItemInfo: React.FC = () => {
@@ -206,6 +206,8 @@ const ItemInfo: React.FC = () => {
                 </CarouselItem>
               ))}
             </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
           </Carousel>
           <h1 className="text-3xl font-bold">{item.title}</h1>
           <p className="text-xl">{item.description}</p>
