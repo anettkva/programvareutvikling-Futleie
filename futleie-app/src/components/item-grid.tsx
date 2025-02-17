@@ -44,7 +44,6 @@ const ItemGrid: React.FC = () => {
         
       };
       
-      console.log(location.pathname)
       if (location.pathname === "/profile") {
         const cookie = Cookies.get("user");
         console.log(cookie);
