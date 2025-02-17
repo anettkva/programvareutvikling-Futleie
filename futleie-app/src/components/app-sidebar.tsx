@@ -16,7 +16,6 @@ import {
 const items = [
   { title: "Galleri", url: "/", icon: Grid },
   { title: "Meldinger", url: "/messages", icon: Inbox },
-  { title: "Kalender", url: "/calendar", icon: Calendar },
   { title: "Søk", url: "/search", icon: Search },
   { title: "Profil", url: "/profile", icon: User },
 ]
