@@ -94,7 +94,7 @@ function ChangeItemForm() {
     };
 
     const uploadImageToSupabase = async (image: File) => {
-        const imageName = `${Date.now()}-${image.name}`;
+        const imageName = `${Date.now()}-${image.name.replace(/[æøåÆØÅ]/g, "")}`;
         const { error } = await supabaseClient.storage
             .from("images")
             .upload(imageName, image);
