@@ -13,6 +13,7 @@ import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 import "react-day-picker/dist/style.css";
 import { Carousel, CarouselContent, CarouselItem } from "./ui/carousel";
+import Cookies from "js-cookie";
 
 const ItemInfo: React.FC = () => {
   const { itemId } = useParams<{ itemId: string }>();
@@ -22,6 +23,8 @@ const ItemInfo: React.FC = () => {
     from: new Date(),
     to: undefined,
   });
+  const [bookedDates, setBookedDates] = useState<Date[]>([]);
+
   /*
    * Hook som henter item fra databasen basert på itemId og setter item state
    * @returns void
@@ -69,6 +72,93 @@ const ItemInfo: React.FC = () => {
     };
     fetchImages();
   }, [itemId, item]);
+
+  const fetchBookedDates = async () => {
+    if (itemId) {
+      const { data, error } = await supabaseClient
+        .from("Rentals")
+        .select("start_date, end_date")
+        .eq("item_id", itemId);
+
+      if (error) {
+        console.error("Error fetching booked dates:", error);
+        return;
+      }
+
+      const dates = data.flatMap(({ start_date, end_date }) => {
+        const startDate = new Date(start_date);
+        const endDate = new Date(end_date);
+        const datesArray = [];
+        for (
+          let date = startDate;
+          date <= endDate;
+          date.setDate(date.getDate() + 1)
+        ) {
+          datesArray.push(new Date(date));
+        }
+        return datesArray;
+      });
+
+      setBookedDates(dates);
+    }
+  };
+
+  useEffect(() => {
+    fetchBookedDates();
+  }, [itemId]);
+
+  const handleBooking = async () => {
+    if (!dateRange?.from || !dateRange?.to) {
+      alert("Velg en gyldig leieperiode");
+      return;
+    }
+
+    const today = new Date();
+    if (dateRange.from < today || dateRange.to < today) {
+      alert("Du kan ikke leie et objekt bakover i tid.");
+      return;
+    }
+
+    const overlappingDates = bookedDates.some(
+      (date) =>
+        (dateRange.from &&
+          dateRange.to &&
+          date >= dateRange.from &&
+          date <= dateRange.to) ||
+        (dateRange.from && dateRange.from >= date && dateRange.from <= date)
+    );
+
+    if (overlappingDates) {
+      alert("Den valgte perioden overlapper med en eksisterende booking.");
+      return;
+    }
+
+    const userCookie = Cookies.get("user");
+    if (!userCookie || userCookie.length === 0) {
+      console.error("User not logged in");
+      return;
+    }
+
+    const renterId = JSON.parse(userCookie).id;
+
+    const { error } = await supabaseClient.from("Rentals").insert([
+      {
+        item_id: itemId,
+        renter_id: renterId,
+        start_date: dateRange.from,
+        end_date: dateRange.to,
+      },
+    ]);
+
+    if (error) {
+      console.error("Error booking item:", error);
+      return;
+    }
+
+    alert("Leie forespørsel sendt!");
+    setDateRange({ from: undefined, to: undefined });
+    fetchBookedDates();
+  };
 
   if (!item || !images) {
     return <p>Loading...</p>;
@@ -121,12 +211,13 @@ const ItemInfo: React.FC = () => {
                 defaultMonth={dateRange?.from}
                 selected={dateRange}
                 onSelect={setDateRange}
-                numberOfMonths={3}
+                numberOfMonths={2}
+                disabled={bookedDates}
               />
             </PopoverContent>
           </Popover>
         </div>
-        <Button>Send forespørsel</Button>
+        <Button onClick={handleBooking}>Send forespørsel</Button>
       </div>
     </div>
   );
