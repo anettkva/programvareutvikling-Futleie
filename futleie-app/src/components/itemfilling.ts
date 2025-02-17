@@ -56,7 +56,6 @@ const putOwnersInItems = async (itemList: Item[] | null, setter: React.Dispatch<
         return item;
         }
         const updatedItem = item = {...item, owner: data[0].username}
-        console.log("Updated item: ", updatedItem)
         return updatedItem;
         
     }))
