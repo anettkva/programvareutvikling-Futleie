@@ -39,7 +39,7 @@ function ChangeItemForm() {
         },
     });
 
-    const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+    const [uploadedImages, setUploadedImages] = useState<File[] | null>([]);
     const [images, setImages] = useState<ItemImage[]>([]);
 
     // Henter eksisterende data for annonsen
@@ -88,9 +88,8 @@ function ChangeItemForm() {
     }, [itemId, form]);
 
     const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
-        const image = e.target.files?.[0];
-        if (image) {
-            setUploadedImage(image);
+        if (e.target.files && e.target.files.length > 0) {
+            setUploadedImages((prevFiles) => [...prevFiles || [], ...e.target.files || []]);
         }
     };
 
@@ -150,17 +149,21 @@ function ChangeItemForm() {
             return;
         }
 
-        if (uploadedImage) {
-            const imageUrl = await uploadImageToSupabase(uploadedImage);
-            if (imageUrl) {
-                const { error: imageError } = await supabaseClient
-                    .from("Item_images")
-                    .insert([{ item_id: itemId, image_url: imageUrl }]);
-
-                if (imageError) {
-                    console.error("Feil ved oppdatering av bilde:", imageError);
-                    return;
-                }
+        if (uploadedImages) {
+            const imageUrls = await Promise.all(uploadedImages.map((image) => {
+                return uploadImageToSupabase(image);
+            } ));
+            if (imageUrls) {
+                imageUrls.map(async (url) => {
+                    const { error: imageError } = await supabaseClient
+                        .from("Item_images")
+                        .insert([{ item_id: itemId, image_url: url }]);
+    
+                    if (imageError) {
+                        console.error("Error uploading image data:", imageError);
+                        return;
+                    }
+                })
             }
         }
 
@@ -215,11 +218,12 @@ function ChangeItemForm() {
                             <FormItem>
                                 <FormLabel>Nytt bilde</FormLabel>
                                 <FormControl>
-                                    <Input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageUpload}
-                                    />
+                                <Input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    onChange={(e) => {handleImageUpload(e); console.log(uploadedImages)}}
+                                />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

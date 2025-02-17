@@ -33,12 +33,11 @@ function CreateItemForm() {
         },
     });
 
-    const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+    const [uploadedImages, setuploadedImages] = useState<File[] | null>([]);
 
     const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
-        const image = e.target.files?.[0];
-        if (image) {
-            setUploadedImage(image);
+        if (e.target.files && e.target.files.length > 0) {
+            setuploadedImages((prevFiles) => [...prevFiles || [], ...e.target.files || []]);
         }
     };
 
@@ -90,17 +89,21 @@ function CreateItemForm() {
 
         const itemId = itemData.id;
 
-        if (uploadedImage) {
-            const imageUrl = await uploadImageToSupabase(uploadedImage);
-            if (imageUrl) {
-                const { error: imageError } = await supabaseClient
-                    .from("Item_images")
-                    .insert([{ item_id: itemId, image_url: imageUrl }]);
-
-                if (imageError) {
-                    console.error("Error uploading image data:", imageError);
-                    return;
-                }
+        if (uploadedImages) {
+            const imageUrls = await Promise.all(uploadedImages.map((image) => {
+                return uploadImageToSupabase(image);
+            } ));
+            if (imageUrls) {
+                imageUrls.map(async (url) => {
+                    const { error: imageError } = await supabaseClient
+                        .from("Item_images")
+                        .insert([{ item_id: itemId, image_url: url }]);
+    
+                    if (imageError) {
+                        console.error("Error uploading image data:", imageError);
+                        return;
+                    }
+                })
             }
         }
 
@@ -150,8 +153,9 @@ function CreateItemForm() {
                             <FormControl>
                                 <Input
                                     type="file"
+                                    multiple
                                     accept="image/*"
-                                    onChange={handleImageUpload}
+                                    onChange={(e) => {handleImageUpload(e); console.log(uploadedImages)}}
                                 />
                             </FormControl>
                             <FormMessage />
