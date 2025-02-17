@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import supabaseClient from "@/supabaseClient";
 import { Item } from "@/Types/Item";
 import {
@@ -16,6 +16,7 @@ import { Carousel, CarouselContent, CarouselItem } from "./ui/carousel";
 import Cookies from "js-cookie";
 
 const ItemInfo: React.FC = () => {
+  const navigate = useNavigate();
   const { itemId } = useParams<{ itemId: string }>();
   const [item, setItem] = useState<Item | null>(null);
   const [images, setImages] = useState<Array<string> | null>(null);
@@ -24,14 +25,21 @@ const ItemInfo: React.FC = () => {
     to: undefined,
   });
   const [bookedDates, setBookedDates] = useState<Date[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
-  /*
-   * Hook som henter item fra databasen basert på itemId og setter item state
-   * @returns void
-   */
+  useEffect(() => {
+    // Hent bruker fra cookie
+    const userCookie = Cookies.get("user");
+    if (userCookie) {
+      const parsedUser = JSON.parse(userCookie);
+      if (parsedUser.id) {
+        setCurrentUserId(parsedUser.id);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const fetchItem = async () => {
-      console.log("Fetching item with ID:", itemId);
       const { data, error } = await supabaseClient
         .from("Items")
         .select()
@@ -41,9 +49,7 @@ const ItemInfo: React.FC = () => {
       if (error) {
         console.error("Error fetching item:", error);
       } else {
-        console.log("Fetched item:", data);
         setItem(data as Item);
-        console.log("Item is set to: ", data);
       }
     };
 
@@ -55,7 +61,6 @@ const ItemInfo: React.FC = () => {
   useEffect(() => {
     const fetchImages = async () => {
       if (item) {
-        console.log("Fetching images");
         const { data, error } = await supabaseClient
           .from("Item_images")
           .select("image_url")
@@ -164,6 +169,25 @@ const ItemInfo: React.FC = () => {
     return <p>Loading...</p>;
   }
 
+  const isOwner = item.owner_id === currentUserId;
+
+  function deleteAd() {
+    const deleteItem = async () => {
+      const { error } = await supabaseClient
+        .from("Items")
+        .delete()
+        .eq("id", itemId);
+
+      if (error) {
+        console.error("Error deleting item:", error);
+      } else {
+        navigate("/");
+      }
+    };
+
+    deleteItem();
+  }
+
   return (
     <div className="flex flex-col items-center gap-6 m-5">
       <div className="flex flex-col gap-6 w-full max-w-2xl">
@@ -183,41 +207,59 @@ const ItemInfo: React.FC = () => {
           </Carousel>
           <h1 className="text-3xl font-bold">{item.title}</h1>
           <p className="text-xl">{item.description}</p>
-          <label className="text-lg text-gray-600">Leieperiode:</label>
-          <Popover>
-            <PopoverTrigger asChild>
+
+          {isOwner ? (
+            // Hvis eier
+            <div className="flex gap-4">
               <Button
+                onClick={() => navigate(`/change-ad/${item.id}`)}
                 variant="outline"
-                className="w-full justify-start text-left font-normal"
               >
-                {dateRange?.from ? (
-                  dateRange.to ? (
-                    <>
-                      {format(dateRange.from, "LLL dd, y")} -{" "}
-                      {format(dateRange.to, "LLL dd, y")}
-                    </>
-                  ) : (
-                    format(dateRange.from, "LLL dd, y")
-                  )
-                ) : (
-                  <span>Velg en dato</span>
-                )}
+                Endre annonse
               </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={dateRange?.from}
-                selected={dateRange}
-                onSelect={setDateRange}
-                numberOfMonths={2}
-                disabled={bookedDates}
-              />
-            </PopoverContent>
-          </Popover>
+              <Button variant="destructive" onClick={deleteAd}>
+                Slett annonse
+              </Button>
+            </div>
+          ) : (
+            <>
+              <label className="text-lg text-gray-600">Leieperiode:</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
+                    {dateRange?.from ? (
+                      dateRange.to ? (
+                        <>
+                          {format(dateRange.from, "LLL dd, y")} -{" "}
+                          {format(dateRange.to, "LLL dd, y")}
+                        </>
+                      ) : (
+                        format(dateRange.from, "LLL dd, y")
+                      )
+                    ) : (
+                      <span>Velg en dato</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={dateRange?.from}
+                    selected={dateRange}
+                    onSelect={setDateRange}
+                    numberOfMonths={2}
+                    disabled={bookedDates}
+                  />
+                </PopoverContent>
+              </Popover>
+              <Button onClick={handleBooking}>Send forespørsel</Button>
+            </>
+          )}
         </div>
-        <Button onClick={handleBooking}>Send forespørsel</Button>
       </div>
     </div>
   );

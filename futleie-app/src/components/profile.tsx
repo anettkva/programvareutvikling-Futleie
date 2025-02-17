@@ -70,7 +70,7 @@ const Profile: React.FC = () => {
             const { data, error } = await Supabase.from("Users")
                 .update([requestBody])
                 .eq("id", userId)
-                .select("username, password_hash");
+                .select("id, username, password_hash");
 
             if (error) {
             } else {
