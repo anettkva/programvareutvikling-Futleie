@@ -98,7 +98,7 @@ const ItemGrid: React.FC = () => {
           Opprett annonse
         </Button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 m-5">
+      <div className="grid gap-6 m-5 grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
         {items ? (
           items.map((item) => {
             return (
