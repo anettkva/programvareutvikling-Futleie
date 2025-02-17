@@ -206,8 +206,12 @@ const ItemInfo: React.FC = () => {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
+            {images.length > 1 && (
+              <>
+                <CarouselPrevious />
+                <CarouselNext />
+              </>
+            )}
           </Carousel>
           <h1 className="text-3xl font-bold">{item.title}</h1>
           <p className="text-xl">{item.description}</p>
