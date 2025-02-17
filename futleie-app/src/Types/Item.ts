@@ -8,7 +8,5 @@ export type Item = {
   owner: {
     username: string;
   };
-  images: {
-    image_url: string;
-  }[];
+  images: string[]
 };

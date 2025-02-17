@@ -109,7 +109,7 @@ const ItemGrid: React.FC = () => {
                 // Tar første bilde som forsidebilde
                 imageUrl={
                   item.images && item.images.length > 0
-                    ? item.images[0].image_url
+                    ? item.images[0]
                     : ""
                 }
                 owner={item.owner ? item.owner.username : ""}

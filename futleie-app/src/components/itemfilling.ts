@@ -35,8 +35,8 @@ const putImagesInItems = async (itemList: Item[] | null, setter: React.Dispatch<
           console.log("Error fetching images");
           return item;
         }
-        item = {...item, images: data.map((images) => images.image_url)}
-        return item;
+        const updatedItem = item = {...item, images: data.map((images) => images.image_url)}
+        return updatedItem;
         
       }))
       setter(tempItemList);
@@ -55,8 +55,8 @@ const putOwnersInItems = async (itemList: Item[] | null, setter: React.Dispatch<
         console.log("Error fetching Owners");
         return item;
         }
-        item = {...item, owner: data[0].username}
-        return item;
+        const updatedItem = item = {...item, owner: data[0].username}
+        return updatedItem;
         
     }))
     setter(tempItemList);
