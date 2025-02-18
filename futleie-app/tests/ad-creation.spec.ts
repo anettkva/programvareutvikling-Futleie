@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test';
 
+// Helper function to generate unique ad names
+function generateUniqueName(prefix: string): string {
+  const randomString = Math.random().toString(36).substring(2, 8);
+  return `${prefix}_${randomString}`;
+}
+
 test.describe('Ad Creation - Image Upload', () => {
   // Helper function to login before each test
   async function loginUser(page) {
@@ -19,7 +25,8 @@ test.describe('Ad Creation - Image Upload', () => {
 
   test('creates ad with single image upload', async ({ page }) => {
     // Fill in the required fields
-    await page.getByLabel('Title').fill('Test Item');
+    const uniqueName = generateUniqueName('Test Item');
+    await page.getByLabel('Title').fill(uniqueName);
     await page.getByLabel('Description').fill('This is a test item description');
 
     // Upload a single image
@@ -36,7 +43,7 @@ test.describe('Ad Creation - Image Upload', () => {
     await page.waitForURL('/');
 
     // Find and click the created ad
-    await page.getByText('Test Item').click();
+    await page.getByText(uniqueName).click();
 
     // Click the delete button
     await page.getByRole('button', { name: 'Slett annonse' }).click();
@@ -47,7 +54,8 @@ test.describe('Ad Creation - Image Upload', () => {
 
   test('creates ad with multiple image upload', async ({ page }) => {
     // Fill in the required fields
-    await page.getByLabel('Title').fill('Multi-Image Item');
+    const uniqueMultiName = generateUniqueName('Multi-Image Item');
+    await page.getByLabel('Title').fill(uniqueMultiName);
     await page.getByLabel('Description').fill('Item with multiple images');
 
     // Create multiple test files
