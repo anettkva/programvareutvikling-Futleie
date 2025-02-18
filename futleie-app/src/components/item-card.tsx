@@ -26,7 +26,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
         >
             <Card className="w-80 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg hover:scale-[1.03] transform">
                 <CardHeader>
-                    <div className="w-full h-28 bg-gray-100 relative overflow-hidden">
+                    <div className="w-full aspect-square bg-gray-100 relative overflow-hidden">
                         {imageUrl ? (
                             <>
                                 <img
