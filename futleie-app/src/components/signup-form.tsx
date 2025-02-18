@@ -25,7 +25,7 @@ const Signup: React.FC<{}> = () => {
     const setCookie = async () => {
         const { data } = await supabaseClient
             .from("Users")
-            .select("username,password_hash")
+            .select("username,password_hash, id")
             .eq(
                 "password_hash",
                 CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex)
