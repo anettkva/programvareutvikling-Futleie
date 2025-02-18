@@ -24,9 +24,9 @@ const ItemCard: React.FC<ItemCardProps> = ({
             to={`/item/${id}`}
             className={cn("flex flex-column gap-6 justify-center", className)}
         >
-            <Card className="w-80 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg hover:scale-[1.03] transform">
-                <CardHeader>
-                    <div className="w-full aspect-square bg-gray-100 relative overflow-hidden">
+            <Card className="w-64 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg hover:scale-[1.03] transform flex flex-col">
+                <CardHeader className="p-0 pt-0 px-0 pb-6">
+                    <div className="w-full aspect-square bg-gray-100 relative overflow-hidden rounded-t-lg">
                         {imageUrl ? (
                             <>
                                 <img
@@ -45,15 +45,15 @@ const ItemCard: React.FC<ItemCardProps> = ({
                         )}
                     </div>
                 </CardHeader>
-                <CardContent>
-                    <div className="flex flex-col gap-6">
-                        <CardTitle className="text-xl">{title}</CardTitle>
-                        <section className="flex flex-row justify-between">
+                <CardContent className="flex-1 flex flex-col justify-between">
+                        <div className="w-full overflow-hidden">
+                            <CardTitle className="text-xl line-clamp-2">{title}</CardTitle>
+                        </div>
+                        <section className="flex flex-row justify-between mt-auto">
                             <p aria-label="owner" className="text-slate-400">
                                 {owner}
                             </p>
                         </section>
-                    </div>
                 </CardContent>
             </Card>
         </Link>
