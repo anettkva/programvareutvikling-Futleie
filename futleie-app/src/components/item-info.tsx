@@ -213,8 +213,8 @@ const ItemInfo: React.FC = () => {
               </>
             )}
           </Carousel>
-          <h1 className="text-3xl font-bold">{item.title}</h1>
-          <p className="text-xl">{item.description}</p>
+          <h1 className="text-3xl font-bold break-words max-w-full whitespace-pre-wrap">{item.title}</h1>
+          <p className="text-xl break-words max-w-full whitespace-pre-wrap">{item.description}</p>
 
           {isOwner ? (
             // Hvis eier
