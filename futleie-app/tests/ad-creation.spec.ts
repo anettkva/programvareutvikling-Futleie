@@ -34,6 +34,15 @@ test.describe('Ad Creation - Image Upload', () => {
 
     // Should be redirected to home page after successful submission
     await page.waitForURL('/');
+
+    // Find and click the created ad
+    await page.getByText('Test Item').click();
+
+    // Click the delete button
+    await page.getByRole('button', { name: 'Slett annonse' }).click();
+
+    // Verify we're back at the home page
+    await page.waitForURL('/');
   });
 
   test('creates ad with multiple image upload', async ({ page }) => {
@@ -62,6 +71,15 @@ test.describe('Ad Creation - Image Upload', () => {
     await page.getByRole('button', { name: 'Upload Ad' }).click();
 
     // Should be redirected to home page after successful submission
+    await page.waitForURL('/');
+
+    // Find and click the created ad
+    await page.getByText('Multi-Image Item').click();
+
+    // Click the delete button
+    await page.getByRole('button', { name: 'Slett annonse' }).click();
+
+    // Verify we're back at the home page
     await page.waitForURL('/');
   });
 
