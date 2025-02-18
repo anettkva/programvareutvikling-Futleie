@@ -58,7 +58,7 @@ export function AppSidebar() {
 
         {/* Logout button at the bottom */}
         {username && (
-          <div className="mt-auto mb-4">
+          <div className="mt-auto mb-4 ml-2 mr-2">
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton onClick={handleLogout}>
