@@ -46,8 +46,8 @@ const ItemCard: React.FC<ItemCardProps> = ({
                     </div>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col justify-between">
-                        <div className="w-full overflow-hidden">
-                            <CardTitle className="text-xl line-clamp-2">{title}</CardTitle>
+                        <div className="w-full overflow-hidden h-[3.75rem]">
+                            <CardTitle className="text-xl line-clamp-2 leading-[1.875rem]">{title}</CardTitle>
                         </div>
                         <section className="flex flex-row justify-between mt-auto">
                             <p aria-label="owner" className="text-slate-400">
