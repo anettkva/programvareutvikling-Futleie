@@ -37,12 +37,18 @@ function CreateItemForm() {
 
     const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            setuploadedImages((prevFiles) => [...prevFiles || [], ...e.target.files || []]);
+            setuploadedImages((prevFiles) => [
+                ...(prevFiles || []),
+                ...(e.target.files || []),
+            ]);
         }
     };
 
     const uploadImageToSupabase = async (image: File) => {
-        const imageName = `${Date.now()}-${image.name.replace(/[æøåÆØÅ]/g, "")}`;
+        const imageName = `${Date.now()}-${image.name.replace(
+            /[æøåÆØÅ]/g,
+            ""
+        )}`;
 
         const { error } = await supabaseClient.storage
             .from("images")
@@ -90,20 +96,25 @@ function CreateItemForm() {
         const itemId = itemData.id;
 
         if (uploadedImages) {
-            const imageUrls = await Promise.all(uploadedImages.map((image) => {
-                return uploadImageToSupabase(image);
-            } ));
+            const imageUrls = await Promise.all(
+                uploadedImages.map((image) => {
+                    return uploadImageToSupabase(image);
+                })
+            );
             if (imageUrls) {
                 imageUrls.map(async (url) => {
                     const { error: imageError } = await supabaseClient
                         .from("Item_images")
                         .insert([{ item_id: itemId, image_url: url }]);
-    
+
                     if (imageError) {
-                        console.error("Error uploading image data:", imageError);
+                        console.error(
+                            "Error uploading image data:",
+                            imageError
+                        );
                         return;
                     }
-                })
+                });
             }
         }
 
@@ -119,9 +130,12 @@ function CreateItemForm() {
                     name="title"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Title</FormLabel>
+                            <FormLabel>Tittel</FormLabel>
                             <FormControl>
-                                <Input placeholder="Enter title" {...field} />
+                                <Input
+                                    placeholder="Skriv inn tittel"
+                                    {...field}
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -132,10 +146,10 @@ function CreateItemForm() {
                     name="description"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Description</FormLabel>
+                            <FormLabel>Beskrivelse</FormLabel>
                             <FormControl>
                                 <Input
-                                    placeholder="Describe the item you want to rent out"
+                                    placeholder="Beskriv gjenstanden..."
                                     className="min-h-[100px]"
                                     {...field}
                                 />
@@ -149,20 +163,23 @@ function CreateItemForm() {
                     name="image"
                     render={() => (
                         <FormItem>
-                            <FormLabel>Image</FormLabel>
+                            <FormLabel>Bilde</FormLabel>
                             <FormControl>
                                 <Input
                                     type="file"
                                     multiple
                                     accept="image/*"
-                                    onChange={(e) => {handleImageUpload(e); console.log(uploadedImages)}}
+                                    onChange={(e) => {
+                                        handleImageUpload(e);
+                                        console.log(uploadedImages);
+                                    }}
                                 />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
-                <Button type="submit">Upload Ad</Button>
+                <Button type="submit">Lag annonse</Button>
             </form>
         </Form>
     );
