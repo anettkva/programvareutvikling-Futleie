@@ -10,9 +10,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 
 import logoFutleie from "@/assets/logoFutleie.svg"
+import logoFutleieMini from "@/assets/Futleie Mini Logo.svg"
 
 // Menu items
 const items = [
@@ -23,6 +25,7 @@ const items = [
 
 export function AppSidebar() {
   const navigate = useNavigate();
+  const { state } = useSidebar();
   const userCookie = Cookie.get("user");
   const username = userCookie ? JSON.parse(userCookie).username : "";
 
@@ -35,13 +38,17 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent className="flex flex-col h-full">
         <SidebarGroup>
-          <SidebarGroupContent className="-mt-8">
+          <SidebarGroupContent>
             <SidebarMenu>
-              <div className="flex items-center justify-left w-full -mb-8 ml-1 ">
-                <a href="/">
-                  <img src={logoFutleie} alt="Futleie" className="w-32 h-32" />
+              <SidebarMenuItem className="mb-1 pt-1">
+                <a href="/" className="flex items-center w-full justify-start pl-2 h-14">
+                  <img 
+                    src={state === 'collapsed' ? logoFutleieMini : logoFutleie} 
+                    alt="Futleie" 
+                    className={`object-contain ${state === 'collapsed' ? 'w-8 h-auto -ml-1' : 'w-28 h-auto'}`}
+                  />
                 </a>
-              </div>
+              </SidebarMenuItem>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
