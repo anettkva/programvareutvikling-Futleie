@@ -29,7 +29,8 @@ const Signup: React.FC<{}> = () => {
             .eq(
                 "password_hash",
                 CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex)
-            );
+            )
+            .eq("username", uname);
         let user;
         if (data) {
             user = data[0] as User;
