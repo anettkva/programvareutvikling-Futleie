@@ -68,6 +68,10 @@ function CreateItemForm() {
     };
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
+        const submitButton = document.getElementById("submitButton") as HTMLButtonElement;
+        if (submitButton) {
+            submitButton.disabled = true;
+        } 
         const userCookie = Cookies.get("user");
         if (!userCookie || userCookie.length === 0) {
             console.error("User not logged in");
@@ -179,7 +183,7 @@ function CreateItemForm() {
                         </FormItem>
                     )}
                 />
-                <Button type="submit">Lag annonse</Button>
+                <Button id="submitButton" type="submit">Lag annonse</Button>
             </form>
         </Form>
     );
