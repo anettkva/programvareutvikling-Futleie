@@ -42,6 +42,10 @@ const Signup: React.FC<{}> = () => {
 
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
+        const userExists = await usernameTaken();
+        if(userExists) {
+            return;
+        }
         const { data, error } = await supabaseClient.from("Users").insert([
             {
                 username: uname,
@@ -57,6 +61,21 @@ const Signup: React.FC<{}> = () => {
             setCookie();
         }
     };
+
+    const usernameTaken = async () => {
+        const { data, error } = await supabaseClient.from("Users").select();
+        if (data) {
+            console.log(data);
+            const existingUser = data.filter((user) => user.username === uname)
+            if (existingUser[0]) {
+                alert(`User with username \"${uname}\" already exists`)
+                return true;
+            }
+        }
+        else {
+            return false;
+        }
+    }
 
     return (
         <div className={cn("flex flex-col gap-6")}>
