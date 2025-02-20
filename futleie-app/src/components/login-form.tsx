@@ -64,7 +64,7 @@ const LoginForm: React.FC<{}> = () => {
                 <Input
                   id="username"
                   type="username"
-                  placeholder=""
+                  placeholder="brukernavn"
                   required
                   onChange={(e) => setUsername(e.target.value)}
                   autoComplete="off"
