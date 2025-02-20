@@ -77,7 +77,7 @@ const LoginForm: React.FC<{}> = () => {
                     href="#"
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                   >
-                    Glemt passord?
+                    {/* Glemt passord? */}
                   </a>
                 </div>
                 <Input
