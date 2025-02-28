@@ -68,14 +68,14 @@ export function Chat({ currentUser, initialChats }: ChatProps) {
   }
 
   return (
-    <div className="flex gap-6 h-full">
+    <div className="flex gap-6 h-full bg-[#FEDEC7]/10 rounded-lg p-4">
       {/* Chat list */}
-      <div className="w-80 bg-gray-50 border rounded-lg border-gray-200">
+      <div className="w-80 bg-white/80 rounded-lg shadow-sm">
         {chats.map((chat) => (
           <div
             key={chat.id}
             onClick={() => handleChatSelect(chat.id)}
-            className={`w-70 m-2 rounded-lg ${chat.isActive ? 'bg-[#FEDEC7]' : 'bg-white'} border border-gray-200 h-20 flex p-5 items-center cursor-pointer hover:bg-opacity-90`}
+            className={`w-70 m-2 rounded-lg ${chat.isActive ? 'bg-[#F26A21]/10 border-[#F26A21]' : 'bg-white border-gray-200'} border h-20 flex p-5 items-center cursor-pointer hover:bg-[#F26A21]/5 transition-colors`}
           >
             <div>{chat.user}</div>
             <div className="ml-auto">
@@ -98,7 +98,7 @@ export function Chat({ currentUser, initialChats }: ChatProps) {
       </div>
 
       {/* Chat window */}
-      <Card className="flex-1 flex flex-col">
+      <Card className="flex-1 flex flex-col bg-white/80 shadow-sm border-0">
         <CardHeader className="flex flex-row items-center">
           <div className="flex items-center space-x-4">
             <p className="text-sm font-medium leading-none">{activeChat.user}</p>
@@ -112,8 +112,8 @@ export function Chat({ currentUser, initialChats }: ChatProps) {
                 className={cn(
                   "flex w-max max-w-[75%] flex-col gap-2 rounded-lg px-3 py-2 text-sm",
                   message.role === "user"
-                    ? "ml-auto bg-primary text-primary-foreground"
-                    : "bg-muted"
+                    ? "ml-auto bg-[#F26A21] text-white"
+                    : "bg-[#9F3C23]/10"
                 )}
               >
                 <div className="flex flex-col gap-1">
@@ -145,14 +145,18 @@ export function Chat({ currentUser, initialChats }: ChatProps) {
             <Input
               id="message"
               placeholder="Skriv en melding..."
-              className="flex-1"
+              className="flex-1 focus-visible:ring-[#F26A21]"
               autoComplete="off"
               value={input}
               onChange={(event) => setInput(event.target.value)}
             />
-            <Button type="submit" size="icon" disabled={inputLength === 0}>
+            <Button
+              type="submit"
+              disabled={inputLength === 0}
+              className="bg-[#F26A21] hover:bg-[#9F3C23] disabled:bg-gray-300 text-white flex gap-2 items-center px-4"
+            >
               <Send className="h-4 w-4" />
-              <span className="sr-only">Send</span>
+              <span>Send</span>
             </Button>
           </form>
         </CardFooter>
