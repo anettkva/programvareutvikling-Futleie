@@ -18,11 +18,11 @@ interface Chat {
 
 interface ChatProps {
   currentUser: string
-  initialChats: Chat[]
+  chats: Chat[]
+  setChats: React.Dispatch<React.SetStateAction<Chat[]>>
 }
 
-export function Chat({ currentUser, initialChats }: ChatProps) {
-  const [chats, setChats] = React.useState<Chat[]>(initialChats)
+export function Chat({ currentUser, chats, setChats }: ChatProps) {
   const [input, setInput] = React.useState("")
   const inputLength = input.trim().length
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
@@ -98,22 +98,22 @@ export function Chat({ currentUser, initialChats }: ChatProps) {
       </div>
 
       {/* Chat window */}
-      <Card className="flex-1 flex flex-col bg-white/80 shadow-sm border-0">
-        <CardHeader className="flex flex-row items-center">
+      <Card className="flex-1 flex flex-col bg-white/80 shadow-sm border-0 h-[calc(100vh-12rem)]">
+        <CardHeader className="flex flex-row items-center border-b py-4">
           <div className="flex items-center space-x-4">
             <p className="text-sm font-medium leading-none">{activeChat.user}</p>
           </div>
         </CardHeader>
-        <CardContent className="flex-1 overflow-y-auto">
-          <div className="space-y-4">
+        <CardContent className="flex-1 overflow-y-auto p-4">
+          <div className="space-y-4 pb-4 flex flex-col">
             {activeChat.messages.map((message, index) => (
               <div
                 key={index}
                 className={cn(
-                  "flex w-max max-w-[75%] flex-col gap-2 rounded-lg px-3 py-2 text-sm",
+                  "flex flex-col gap-2 rounded-lg px-3 py-2 text-sm break-words",
                   message.role === "user"
-                    ? "ml-auto bg-[#F26A21] text-white"
-                    : "bg-[#9F3C23]/10"
+                    ? "ml-auto bg-[#F26A21] text-white self-end max-w-[75%]"
+                    : "bg-[#9F3C23]/10 self-start max-w-[75%]"
                 )}
               >
                 <div className="flex flex-col gap-1">
