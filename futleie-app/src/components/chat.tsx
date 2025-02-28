@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card"
 import { Input } from "./ui/input"
-import { ChatMessage } from "@/types/chat-message"
+import { ChatMessage } from "@/Types/chat-message"
 
 interface ChatProps {
   messages: ChatMessage[]

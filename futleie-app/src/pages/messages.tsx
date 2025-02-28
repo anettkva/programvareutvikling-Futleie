@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Chat } from '@/components/chat';
-import { ChatMessage } from '@/types/chat-message';
+import { ChatMessage } from '@/Types/chat-message';
 
 const Messages: React.FC = () => {
   const [messages, setMessages] = React.useState<ChatMessage[]>([
