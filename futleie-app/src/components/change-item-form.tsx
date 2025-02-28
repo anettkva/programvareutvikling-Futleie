@@ -13,13 +13,39 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+    Select,
+    SelectTrigger,
+    SelectContent,
+    SelectItem,
+    SelectValue,
+} from "@/components/ui/select";
 import { useNavigate, useParams } from "react-router-dom";
 import Cookies from "js-cookie";
+
+const categories = ["Teknologi", "Verktøy", "Sport og Fritid", "Diverse"];
+const locations = [
+    "Agder",
+    "Innlandet",
+    "Møre og Romsdal",
+    "Nordland",
+    "Oslo",
+    "Rogaland",
+    "Troms og Finnmark",
+    "Trøndelag",
+    "Vestfold og Telemark",
+    "Vestland",
+    "Østfold",
+    "Akershus",
+    "Buskerud",
+];
 
 const formSchema = z.object({
     title: z.string().nonempty({ message: "Tittel kreves" }),
     description: z.string().nonempty({ message: "Beskrivelse kreves" }),
     image: z.string(),
+    category: z.string().nonempty({ message: "Kategori kreves" }),
+    location: z.string().nonempty({ message: "Lokasjon kreves" }),
 });
 
 type ItemImage = {
@@ -36,6 +62,8 @@ function ChangeItemForm() {
             title: "",
             description: "",
             image: "",
+            category: "",
+            location: "",
         },
     });
 
@@ -47,7 +75,7 @@ function ChangeItemForm() {
         async function fetchItem() {
             const { data, error } = await supabaseClient
                 .from("Items")
-                .select("title, description")
+                .select("title, description, category, location")
                 .eq("id", itemId)
                 .single();
 
@@ -61,6 +89,8 @@ function ChangeItemForm() {
                     title: data.title || "",
                     description: data.description || "",
                     image: "",
+                    category: data.category || "",
+                    location: data.location || "",
                 });
             }
         }
@@ -89,12 +119,18 @@ function ChangeItemForm() {
 
     const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            setUploadedImages((prevFiles) => [...prevFiles || [], ...e.target.files || []]);
+            setUploadedImages((prevFiles) => [
+                ...(prevFiles || []),
+                ...(e.target.files || []),
+            ]);
         }
     };
 
     const uploadImageToSupabase = async (image: File) => {
-        const imageName = `${Date.now()}-${image.name.replace(/[æøåÆØÅ]/g, "")}`;
+        const imageName = `${Date.now()}-${image.name.replace(
+            /[æøåÆØÅ]/g,
+            ""
+        )}`;
         const { error } = await supabaseClient.storage
             .from("images")
             .upload(imageName, image);
@@ -139,6 +175,8 @@ function ChangeItemForm() {
             .update({
                 title: values.title,
                 description: values.description,
+                category: values.category,
+                location: values.location,
             })
             .eq("id", itemId)
             .select()
@@ -150,20 +188,23 @@ function ChangeItemForm() {
         }
 
         if (uploadedImages) {
-            const imageUrls = await Promise.all(uploadedImages.map((image) => {
-                return uploadImageToSupabase(image);
-            } ));
+            const imageUrls = await Promise.all(
+                uploadedImages.map((image) => uploadImageToSupabase(image))
+            );
             if (imageUrls) {
                 imageUrls.map(async (url) => {
                     const { error: imageError } = await supabaseClient
                         .from("Item_images")
                         .insert([{ item_id: itemId, image_url: url }]);
-    
+
                     if (imageError) {
-                        console.error("Error uploading image data:", imageError);
+                        console.error(
+                            "Error uploading image data:",
+                            imageError
+                        );
                         return;
                     }
-                })
+                });
             }
         }
 
@@ -213,17 +254,80 @@ function ChangeItemForm() {
                     />
                     <FormField
                         control={form.control}
+                        name="category"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Kategori</FormLabel>
+                                <FormControl>
+                                    <Select
+                                        onValueChange={field.onChange}
+                                        value={field.value}
+                                    >
+                                        <SelectTrigger className="border rounded p-2">
+                                            <SelectValue placeholder="Velg kategori" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {categories.map((cat, idx) => (
+                                                <SelectItem
+                                                    key={idx}
+                                                    value={cat}
+                                                >
+                                                    {cat}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="location"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Lokasjon</FormLabel>
+                                <FormControl>
+                                    <Select
+                                        onValueChange={field.onChange}
+                                        value={field.value}
+                                    >
+                                        <SelectTrigger className="border rounded p-2">
+                                            <SelectValue placeholder="Velg lokasjon" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {locations.map((loc, idx) => (
+                                                <SelectItem
+                                                    key={idx}
+                                                    value={loc}
+                                                >
+                                                    {loc}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
                         name="image"
                         render={() => (
                             <FormItem>
                                 <FormLabel>Nytt bilde</FormLabel>
                                 <FormControl>
-                                <Input
-                                    type="file"
-                                    multiple
-                                    accept="image/*"
-                                    onChange={(e) => {handleImageUpload(e); console.log(uploadedImages)}}
-                                />
+                                    <Input
+                                        type="file"
+                                        multiple
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            handleImageUpload(e);
+                                            console.log(uploadedImages);
+                                        }}
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
