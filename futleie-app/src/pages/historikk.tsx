@@ -96,27 +96,27 @@ const Historikk: React.FC = () => {
       
       if (!item || item.rating === null) return;
       
-      // Update the rating in the database
-      const result = await updateRentalRating(item.rental_id, item.rating);
+      console.log(`Submitting rating ${item.rating} for rental ID ${item.rental_id}`);
       
-      if (result) {
-        // Update the local state
-        if (type === 'leid') {
-          setLeidItems(prevItems => 
-            prevItems.map(item => 
-              item.id === itemId ? { ...item, isRated: true } : item
-            )
-          );
-        } else {
-          setLeidUtItems(prevItems => 
-            prevItems.map(item => 
-              item.id === itemId ? { ...item, isRated: true } : item
-            )
-          );
-        }
-        
-        console.log(`Successfully submitted rating for ${type} item ${itemId}`);
+      // Update the rating in the database
+      await updateRentalRating(item.rental_id, item.rating);
+      
+      // Immediately update the local state to show "Vurdering sendt"
+      if (type === 'leid') {
+        setLeidItems(prevItems => 
+          prevItems.map(i => 
+            i.id === itemId ? { ...i, isRated: true } : i
+          )
+        );
+      } else {
+        setLeidUtItems(prevItems => 
+          prevItems.map(i => 
+            i.id === itemId ? { ...i, isRated: true } : i
+          )
+        );
       }
+      
+      console.log(`Successfully submitted rating for ${type} item ${itemId}`);
     } catch (err) {
       console.error("Error submitting rating:", err);
       // You might want to show an error message to the user here
@@ -190,8 +190,14 @@ const Historikk: React.FC = () => {
           <Button 
             size="sm" 
             disabled={rating === null}
-            onClick={() => rating !== null && onRatingSubmit(itemId, type)}
+            onClick={(e) => {
+              e.preventDefault();
+              if (rating !== null) {
+                onRatingSubmit(itemId, type);
+              }
+            }}
             className="ml-2 h-7 text-xs px-2 flex-shrink-0"
+            type="button"
           >
             Send
           </Button>
