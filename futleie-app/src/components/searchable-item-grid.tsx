@@ -8,6 +8,7 @@ const SearchableItemGrid: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [searchResults, setSearchResults] = useState<Item[]>([]);
     const [radius, setRadius] = useState(10);
+    const [selectedCategory, setSelectedCategory] = useState<string>("");
     const [userLocation, setUserLocation] = useState<{
         lat: number;
         lng: number;
@@ -27,6 +28,11 @@ const SearchableItemGrid: React.FC = () => {
                 query = query.or(
                     `title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`
                 );
+            }
+
+            // Add category filter if a category is selected
+            if (selectedCategory) {
+                query = query.eq("category", selectedCategory);
             }
 
             const { data, error } = await query;
@@ -68,7 +74,7 @@ const SearchableItemGrid: React.FC = () => {
         };
 
         fetchSearchResults();
-    }, [searchTerm, userLocation, radius]);
+    }, [searchTerm, userLocation, radius, selectedCategory]);
 
     // Haversine formula to calculate distance between two points on Earth
     const calculateDistance = (
@@ -104,6 +110,8 @@ const SearchableItemGrid: React.FC = () => {
                 setRadius={setRadius}
                 userLocation={userLocation}
                 setUserLocation={setUserLocation}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
             />
             <ItemGrid inputItems={searchResults} />
         </div>

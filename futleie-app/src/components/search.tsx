@@ -1,7 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import supabaseClient from "@/supabaseClient";
 
 type SearchProps = {
     searchTerm: string;
@@ -10,6 +20,8 @@ type SearchProps = {
     setRadius?: (radius: number) => void;
     userLocation?: { lat: number; lng: number } | null;
     setUserLocation?: (location: { lat: number; lng: number } | null) => void;
+    selectedCategory?: string;
+    setSelectedCategory?: (category: string) => void;
 };
 
 const Search: React.FC<SearchProps> = ({
@@ -19,12 +31,39 @@ const Search: React.FC<SearchProps> = ({
     setRadius = () => {},
     userLocation = null,
     setUserLocation = () => {},
+    selectedCategory = "",
+    setSelectedCategory = () => {},
 }) => {
     const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
     const [localRadius, setLocalRadius] = useState(radius);
+    const [categories, setCategories] = useState<string[]>([]);
 
-    const handleSearch = () => {
-        setSearchTerm(localSearchTerm);
+    useEffect(() => {
+        // Fetch categories from the database
+        const fetchCategories = async () => {
+            const { data, error } = await supabaseClient
+                .from("Items")
+                .select("category")
+                .not("category", "is", null);
+
+            if (error) {
+                console.error("Error fetching categories:", error);
+                return;
+            }
+
+            // Extract unique categories
+            const uniqueCategories = [
+                ...new Set(data.map((item) => item.category).filter(Boolean)),
+            ];
+            setCategories(uniqueCategories);
+        };
+
+        fetchCategories();
+    }, []);
+
+    const handleSearch = (search: string) => {
+        setLocalSearchTerm(search);
+        setSearchTerm(search);
     };
 
     const handleGetLocation = () => {
@@ -53,6 +92,11 @@ const Search: React.FC<SearchProps> = ({
         setRadius(value[0]);
     };
 
+    const handleCategoryChange = (value: string) => {
+        // Convert "all" back to empty string for the parent component's state
+        setSelectedCategory(value === "all" ? "" : value);
+    };
+
     return (
         <div className="w-full">
             <div className="flex flex-col gap-6 px-5 py-6">
@@ -64,14 +108,39 @@ const Search: React.FC<SearchProps> = ({
                             placeholder="Søk..."
                             className="max-w-md"
                             value={localSearchTerm}
-                            onChange={(e) => setLocalSearchTerm(e.target.value)}
+                            onChange={(e) => handleSearch(e.target.value)}
                         />
-                        <Button
-                            onClick={handleSearch}
-                            className="bg-blue-500 hover:bg-blue-600 text-white"
+                    </div>
+
+                    <div className="flex flex-col gap-2 max-w-md">
+                        <Select
+                            value={
+                                selectedCategory === ""
+                                    ? "all"
+                                    : selectedCategory
+                            }
+                            onValueChange={handleCategoryChange}
                         >
-                            Søk
-                        </Button>
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Velg kategori" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectLabel>Kategorier</SelectLabel>
+                                    <SelectItem value="all">
+                                        Alle kategorier
+                                    </SelectItem>
+                                    {categories.map((category) => (
+                                        <SelectItem
+                                            key={category}
+                                            value={category}
+                                        >
+                                            {category}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     <div className="flex flex-col gap-2 max-w-md">
