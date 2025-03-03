@@ -242,19 +242,6 @@ const Historikk: React.FC = () => {
       
       {/* Tab buttons */}
       <div className="flex justify-between items-center mb-6">
-        {/* Debug button */}
-        <Button
-          variant="outline"
-          className="absolute top-2 right-2 text-xs bg-gray-100 hover:bg-gray-200"
-          onClick={() => {
-            console.log('Debug button clicked');
-            // Force a refresh of the data
-            fetchData();
-          }}
-        >
-          Debug Refresh
-        </Button>
-        
         <div className="flex gap-4">
         <Button 
           variant="outline"
