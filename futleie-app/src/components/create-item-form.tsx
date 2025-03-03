@@ -13,13 +13,39 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+    Select,
+    SelectTrigger,
+    SelectContent,
+    SelectItem,
+    SelectValue,
+} from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
+
+const categories = ["Teknologi", "Verktøy", "Sport og Fritid", "Diverse"];
+const locations = [
+    "Agder",
+    "Innlandet",
+    "Møre og Romsdal",
+    "Nordland",
+    "Oslo",
+    "Rogaland",
+    "Troms og Finnmark",
+    "Trøndelag",
+    "Vestfold og Telemark",
+    "Vestland",
+    "Østfold",
+    "Akershus",
+    "Buskerud",
+];
 
 const formSchema = z.object({
     title: z.string().nonempty({ message: "Title is required" }),
     description: z.string().nonempty({ message: "Description is required" }),
     image: z.string(),
+    category: z.string().nonempty({ message: "Kategori er påkrevd" }),
+    location: z.string().nonempty({ message: "Lokasjon er påkrevd" }),
 });
 
 function CreateItemForm() {
@@ -30,6 +56,8 @@ function CreateItemForm() {
             title: "",
             description: "",
             image: "",
+            category: "",
+            location: "",
         },
     });
 
@@ -68,10 +96,12 @@ function CreateItemForm() {
     };
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        const submitButton = document.getElementById("submitButton") as HTMLButtonElement;
+        const submitButton = document.getElementById(
+            "submitButton"
+        ) as HTMLButtonElement;
         if (submitButton) {
             submitButton.disabled = true;
-        } 
+        }
         const userCookie = Cookies.get("user");
         if (!userCookie || userCookie.length === 0) {
             console.error("User not logged in");
@@ -87,6 +117,8 @@ function CreateItemForm() {
                     title: values.title,
                     description: values.description,
                     owner_id: userId,
+                    category: values.category,
+                    location: values.location,
                 },
             ])
             .select()
@@ -164,6 +196,60 @@ function CreateItemForm() {
                 />
                 <FormField
                     control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Kategori</FormLabel>
+                            <FormControl>
+                                <Select
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                >
+                                    <SelectTrigger className="border rounded p-2">
+                                        <SelectValue placeholder="Velg kategori" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {categories.map((cat, idx) => (
+                                            <SelectItem key={idx} value={cat}>
+                                                {cat}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Lokasjon</FormLabel>
+                            <FormControl>
+                                <Select
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                >
+                                    <SelectTrigger className="border rounded p-2">
+                                        <SelectValue placeholder="Velg lokasjon" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {locations.map((loc, idx) => (
+                                            <SelectItem key={idx} value={loc}>
+                                                {loc}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
                     name="image"
                     render={() => (
                         <FormItem>
@@ -183,7 +269,9 @@ function CreateItemForm() {
                         </FormItem>
                     )}
                 />
-                <Button id="submitButton" type="submit">Lag annonse</Button>
+                <Button id="submitButton" type="submit">
+                    Lag annonse
+                </Button>
             </form>
         </Form>
     );
