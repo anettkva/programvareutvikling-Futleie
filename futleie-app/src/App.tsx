@@ -13,23 +13,30 @@ import Messages from "./pages/messages";
 import Historikk from "./pages/historikk";
 
 const App: React.FC<{}> = () => {
-  const location = useLocation();
-  const userCookie = Cookie.get("user");
-  const isAuthenticated = userCookie && userCookie.length > 0;
+    const location = useLocation();
+    const userCookie = Cookie.get("user");
+    const isAuthenticated = userCookie && userCookie.length > 0;
 
-  // Allow access to login and signup pages even when not authenticated
-  if (!isAuthenticated && !["/login", "/signup"].includes(location.pathname)) {
-    return <Navigate to="/login" replace />;
-  }
+    // Allow access to login and signup pages even when not authenticated
+    if (
+        !isAuthenticated &&
+        !["/login", "/signup"].includes(location.pathname)
+    ) {
+        return <Navigate to="/login" replace />;
+    }
 
-  // Redirect authenticated users away from login/signup to gallery
-  if (isAuthenticated && ["/login", "/signup"].includes(location.pathname)) {
-    return <Navigate to="/gallery" replace />;
-  }
+    // Redirect authenticated users away from login/signup to gallery
+    if (isAuthenticated && ["/login", "/signup"].includes(location.pathname)) {
+        return <Navigate to="/gallery" replace />;
+    }
 
     return (
         <Routes>
             <Route path="/" element={<Navigate to="/gallery" replace />} />
+            <Route
+                path="/search"
+                element={<Navigate to="/gallery" replace />}
+            />
             <Route path="/login" element={<Page />} />
             <Route path="/signup" element={<Signup />} />
             <Route
@@ -62,14 +69,6 @@ const App: React.FC<{}> = () => {
                 element={
                     <Layout>
                         <ChangeItemForm />
-                    </Layout>
-                }
-            />
-            <Route
-                path="/search"
-                element={
-                    <Layout>
-                        <Search />
                     </Layout>
                 }
             />
