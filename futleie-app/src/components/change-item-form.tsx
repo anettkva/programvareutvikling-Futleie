@@ -98,8 +98,8 @@ function ChangeItemForm() {
     } | null>(null);
     const [locationStatus, setLocationStatus] = useState<string>("");
     const [mapCenter, setMapCenter] = useState<[number, number]>([
-        59.9139, 10.7522,
-    ]); // Default to Oslo
+        63.430515, 10.395087,
+    ]); //
 
     // Update form values when location changes
     useEffect(() => {

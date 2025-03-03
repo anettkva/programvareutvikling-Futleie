@@ -10,6 +10,8 @@ type ItemGridProps = {
 };
 
 const ItemGrid: React.FC<ItemGridProps> = ({ inputItems = [] }) => {
+    console.log(inputItems);
+
     const [items, setItems] = useState<Item[] | null>(inputItems);
     const navigate = useNavigate();
 
