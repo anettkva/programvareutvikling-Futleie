@@ -156,7 +156,7 @@ const Messages: React.FC = () => {
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button
-                className="bg-[#F26A21] hover:bg-[#9F3C23] text-white flex gap-2 items-center">
+                className="flex gap-2 items-center">
                 <Plus className="h-4 w-4" />
                 <span>Ny chat</span>
               </Button>
@@ -178,7 +178,7 @@ const Messages: React.FC = () => {
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full bg-[#F26A21] hover:bg-[#9F3C23] text-white">
+                  className="w-full">
                   Start chat
                 </Button>
               </form>

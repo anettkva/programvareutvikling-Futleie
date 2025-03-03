@@ -26,7 +26,6 @@ const ItemGrid: React.FC<ItemGridProps> = ({ inputItems = [] }) => {
             <div className="flex justify-end px-5 pt-5">
                 <Button
                     onClick={handleCreateAd}
-                    className="bg-black hover:bg-gray-800 text-white"
                 >
                     Opprett annonse
                 </Button>

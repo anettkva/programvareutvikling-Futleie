@@ -143,8 +143,6 @@ const Profile: React.FC = () => {
                             />
                             <Button
                                 type="submit"
-                                variant="outline"
-                                className="md:mt-2 bg-black text-white"
                             >
                                 Oppdater
                             </Button>
