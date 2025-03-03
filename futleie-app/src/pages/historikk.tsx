@@ -28,11 +28,32 @@ const Historikk: React.FC = () => {
     try {
       setLoading(true);
       
-      // Use a placeholder user ID
-      const userId = 1;
+      // Get the current user ID from the cookie
+      const userCookie = Cookies.get("user");
+      if (!userCookie || userCookie.length === 0) {
+        setError("Du må være logget inn for å se utleiehistorikk");
+        setLoading(false);
+        return;
+      }
       
-      // Fetch rental history with placeholder data
+      const userData = JSON.parse(userCookie);
+      const userId = userData.id;
+      
+      // Log user data for debugging
+      console.log("=== HISTORIKK USER DATA ====");
+      console.log("User cookie data:", userData);
+      console.log("User ID:", userId);
+      console.log("Show past only:", showPastOnly);
+      console.log("===========================");
+      
+      // Fetch rental history from the database
       const { leidItems: rentedItems, leidUtItems: rentedOutItems } = await fetchRentalHistory(userId, showPastOnly);
+      
+      // Log received data for debugging
+      console.log("=== HISTORIKK RECEIVED DATA ====");
+      console.log("Items rented BY user (received):", rentedItems);
+      console.log("Items rented OUT by user (received):", rentedOutItems);
+      console.log("=================================");
       
       setLeidItems(rentedItems);
       setLeidUtItems(rentedOutItems);

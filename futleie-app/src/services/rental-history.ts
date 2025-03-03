@@ -26,135 +26,64 @@ export const fetchRentalHistory = async (userId: number, pastOnly: boolean = fal
     // Get current date in ISO format
     const currentDate = new Date().toISOString().split('T')[0];
     
-    // PLACEHOLDER DATA: Items rented by the user
-    const rentedByUser = [
-      {
-        id: 1,
-        start_date: '2025-02-01',
-        end_date: '2025-02-15',
-        item_id: 101,
-        rating: 4,
-        Items: {
-          id: 101,
-          title: 'Fin leilighet i sentrum',
-          description: 'Moderne leilighet med god beliggenhet',
-          owner_id: 2,
-          category: 'Leilighet',
-          location: 'Oslo, Grünerløkka'
-        }
-      },
-      {
-        id: 2,
-        start_date: '2025-03-10',
-        end_date: '2025-03-20',
-        item_id: 102,
-        rating: null,
-        Items: {
-          id: 102,
-          title: 'Hytte ved sjøen',
-          description: 'Koselig hytte med sjøutsikt',
-          owner_id: 3,
-          category: 'Hytte',
-          location: 'Bergen, Askøy'
-        }
-      },
-      {
-        id: 3,
-        start_date: '2025-01-05',
-        end_date: '2025-01-10',
-        item_id: 103,
-        rating: 5,
-        Items: {
-          id: 103,
-          title: 'Enebolig med hage',
-          description: 'Stor enebolig med fin hage',
-          owner_id: 4,
-          category: 'Hus',
-          location: 'Trondheim, Byåsen'
-        }
-      },
-      {
-        id: 6,
-        start_date: '2024-12-20',
-        end_date: '2024-12-25', // Past date that hasn't been rated
-        item_id: 104,
-        rating: null, // Not rated yet
-        Items: {
-          id: 104,
-          title: 'Leilighet med balkong',
-          description: 'Pen leilighet med utsikt over byen',
-          owner_id: 5,
-          category: 'Leilighet',
-          location: 'Stavanger, Sentrum'
-        }
-      }
-    ];
+    // Query for items rented BY the user (where user is the renter)
+    let rentedByUserQuery = supabaseClient
+      .from("Rentals")
+      .select(`
+        *,
+        Items(*)
+      `)
+      .eq("renter_id", userId);
     
-    // PLACEHOLDER DATA: Items rented out by the user
-    const rentedOutByUser = [
-      {
-        id: 4,
-        start_date: '2025-02-05',
-        end_date: '2025-02-12',
-        item_id: 201,
-        rating: 5,
-        renter_id: 5,
-        Items: {
-          id: 201,
-          title: 'Moderne leilighet',
-          description: 'Nyoppusset leilighet i sentrum',
-          owner_id: userId,
-          category: 'Leilighet',
-          location: 'Oslo, Frogner'
-        }
-      },
-      {
-        id: 5,
-        start_date: '2025-03-15',
-        end_date: '2025-03-30',
-        item_id: 202,
-        rating: null,
-        renter_id: 6,
-        Items: {
-          id: 202,
-          title: 'Koselig hytte',
-          description: 'Hytte ved fjellet',
-          owner_id: userId,
-          category: 'Hytte',
-          location: 'Lillehammer, Hafjell'
-        }
-      },
-      {
-        id: 7,
-        start_date: '2024-11-15',
-        end_date: '2024-11-22', // Past date that hasn't been rated
-        item_id: 203,
-        rating: null, // Past rental that hasn't been rated yet
-        renter_id: 8,
-        Items: {
-          id: 203,
-          title: 'Studio leilighet',
-          description: 'Kompakt og moderne studioleilighet',
-          owner_id: userId,
-          category: 'Leilighet',
-          location: 'Trondheim, Solsiden'
-        }
-      }
-    ];
+    // Query for items rented OUT by the user (where user is the owner of the item)
+    let rentedOutByUserQuery = supabaseClient
+      .from("Rentals")
+      .select(`
+        *,
+        Items!inner(*)
+      `)
+      .eq("Items.owner_id", userId);
     
-    // Filter by past only if needed
-    const filteredRentedByUser = pastOnly 
-      ? rentedByUser.filter(rental => rental.end_date < currentDate)
-      : rentedByUser;
-      
-    const filteredRentedOutByUser = pastOnly
-      ? rentedOutByUser.filter(rental => rental.end_date < currentDate)
-      : rentedOutByUser;
-
+    // Add filter for past rentals if needed
+    if (pastOnly) {
+      rentedByUserQuery = rentedByUserQuery.lt("end_date", currentDate);
+      rentedOutByUserQuery = rentedOutByUserQuery.lt("end_date", currentDate);
+    }
+    
+    // Execute both queries in parallel
+    const [rentedByUserResult, rentedOutByUserResult] = await Promise.all([
+      rentedByUserQuery,
+      rentedOutByUserQuery
+    ]);
+    
+    // Log the raw data from the database for debugging
+    console.log("=== RENTAL HISTORY DATABASE ACCESS ====");
+    console.log(`User ID: ${userId}, Past Only: ${pastOnly}`);
+    console.log("Items rented BY user (raw data):", rentedByUserResult.data);
+    console.log("Items rented OUT by user (raw data):", rentedOutByUserResult.data);
+    console.log("=======================================");
+    
+    // Handle errors
+    if (rentedByUserResult.error) {
+      console.error("Error fetching rentals by user:", rentedByUserResult.error);
+      throw new Error(rentedByUserResult.error.message);
+    }
+    
+    if (rentedOutByUserResult.error) {
+      console.error("Error fetching rentals out by user:", rentedOutByUserResult.error);
+      throw new Error(rentedOutByUserResult.error.message);
+    }
+    
     // Format the data into the expected format
-    const leidItems = formatRentedItems(filteredRentedByUser);
-    const leidUtItems = formatRentedOutItems(filteredRentedOutByUser);
-
+    const leidItems = formatRentedItems(rentedByUserResult.data || []);
+    const leidUtItems = formatRentedOutItems(rentedOutByUserResult.data || []);
+    
+    // Log the formatted data for debugging
+    console.log("=== RENTAL HISTORY FORMATTED DATA ====");
+    console.log("Items rented BY user (formatted):", leidItems);
+    console.log("Items rented OUT by user (formatted):", leidUtItems);
+    console.log("=======================================");
+    
     return { leidItems, leidUtItems };
   } catch (error) {
     console.error("Error in fetchRentalHistory:", error);
@@ -232,7 +161,20 @@ const formatDatePeriod = (startDate: string, endDate: string): string => {
  * Update rating for a rental
  */
 export const updateRentalRating = async (rentalId: number, rating: number) => {
-  // Just return success for the placeholder implementation
-  console.log(`Rating updated for rental ${rentalId}: ${rating} stars`);
-  return [{ id: rentalId, rating }];
+  try {
+    const { data, error } = await supabaseClient
+      .from("Rentals")
+      .update({ rating: rating })
+      .eq("id", rentalId);
+      
+    if (error) {
+      console.error("Error updating rental rating:", error);
+      throw new Error(error.message);
+    }
+    
+    return data;
+  } catch (error) {
+    console.error("Error in updateRentalRating:", error);
+    throw error;
+  }
 };
