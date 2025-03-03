@@ -290,7 +290,7 @@ const Historikk: React.FC = () => {
       {/* Tab content - only show when not loading and no errors */}
       {!loading && !error && activeTab === 'leid' && (
         <div>
-          <h2 className="text-xl font-semibold mb-4">Eiendommer du har leid</h2>
+          <h2 className="text-xl font-semibold mb-4">Ting du har leid</h2>
           {leidItems.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {leidItems.map(item => (
@@ -298,14 +298,14 @@ const Historikk: React.FC = () => {
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground">Du har ikke leid noen eiendommer ennå.</p>
+            <p className="text-muted-foreground">Du har ikke leid noen ting ennå.</p>
           )}
         </div>
       )}
       
       {!loading && !error && activeTab === 'leidUt' && (
         <div>
-          <h2 className="text-xl font-semibold mb-4">Eiendommer du har leid ut</h2>
+          <h2 className="text-xl font-semibold mb-4">Ting du har leid ut</h2>
           {leidUtItems.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {leidUtItems.map(item => (
@@ -313,7 +313,7 @@ const Historikk: React.FC = () => {
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground">Du har ikke leid ut noen eiendommer ennå.</p>
+            <p className="text-muted-foreground">Du har ikke leid ut noen ting ennå.</p>
           )}
         </div>
       )}
