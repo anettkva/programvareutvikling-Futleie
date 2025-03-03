@@ -28,11 +28,32 @@ const Historikk: React.FC = () => {
     try {
       setLoading(true);
       
-      // Use a placeholder user ID
-      const userId = 1;
+      // Get the current user ID from the cookie
+      const userCookie = Cookies.get("user");
+      if (!userCookie || userCookie.length === 0) {
+        setError("Du må være logget inn for å se utleiehistorikk");
+        setLoading(false);
+        return;
+      }
       
-      // Fetch rental history with placeholder data
+      const userData = JSON.parse(userCookie);
+      const userId = userData.id;
+      
+      // Log user data for debugging
+      console.log("=== HISTORIKK USER DATA ====");
+      console.log("User cookie data:", userData);
+      console.log("User ID:", userId);
+      console.log("Show past only:", showPastOnly);
+      console.log("===========================");
+      
+      // Fetch rental history from the database
       const { leidItems: rentedItems, leidUtItems: rentedOutItems } = await fetchRentalHistory(userId, showPastOnly);
+      
+      // Log received data for debugging
+      console.log("=== HISTORIKK RECEIVED DATA ====");
+      console.log("Items rented BY user (received):", rentedItems);
+      console.log("Items rented OUT by user (received):", rentedOutItems);
+      console.log("=================================");
       
       setLeidItems(rentedItems);
       setLeidUtItems(rentedOutItems);
@@ -290,7 +311,7 @@ const Historikk: React.FC = () => {
       {/* Tab content - only show when not loading and no errors */}
       {!loading && !error && activeTab === 'leid' && (
         <div>
-          <h2 className="text-xl font-semibold mb-4">Eiendommer du har leid</h2>
+          <h2 className="text-xl font-semibold mb-4">Ting du har leid</h2>
           {leidItems.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {leidItems.map(item => (
@@ -298,14 +319,14 @@ const Historikk: React.FC = () => {
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground">Du har ikke leid noen eiendommer ennå.</p>
+            <p className="text-muted-foreground">Du har ikke leid noen ting ennå.</p>
           )}
         </div>
       )}
       
       {!loading && !error && activeTab === 'leidUt' && (
         <div>
-          <h2 className="text-xl font-semibold mb-4">Eiendommer du har leid ut</h2>
+          <h2 className="text-xl font-semibold mb-4">Ting du har leid ut</h2>
           {leidUtItems.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {leidUtItems.map(item => (
@@ -313,7 +334,7 @@ const Historikk: React.FC = () => {
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground">Du har ikke leid ut noen eiendommer ennå.</p>
+            <p className="text-muted-foreground">Du har ikke leid ut noen ting ennå.</p>
           )}
         </div>
       )}
