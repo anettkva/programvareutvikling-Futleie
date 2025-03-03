@@ -152,6 +152,7 @@ const Messages: React.FC = () => {
       <div className="flex flex-col h-full gap-6 px-5 py-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Meldinger</h1>
+          {/* Commented out for now, might need later
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button
@@ -183,6 +184,7 @@ const Messages: React.FC = () => {
               </form>
             </DialogContent>
           </Dialog>
+          */}
         </div>
         <div className="flex-1">
           <Chat
