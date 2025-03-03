@@ -172,7 +172,7 @@ export function Chat({ currentUser, chats, setChats }: ChatProps) {
             <Button
               type="submit"
               disabled={inputLength === 0}
-              className="bg-[#F26A21] hover:bg-[#9F3C23] disabled:bg-gray-300 text-white flex gap-2 items-center px-4"
+              className="flex gap-2 items-center px-4"
             >
               <Send className="h-4 w-4" />
               <span>Send</span>

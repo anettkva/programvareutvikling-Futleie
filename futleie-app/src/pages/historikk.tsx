@@ -175,7 +175,7 @@ const Historikk: React.FC = () => {
               <Star
                 key={i}
                 size={18}
-                className={`transition-colors ${isRated ? '' : 'cursor-pointer'} ${isFilled ? "text-[#F26A21] fill-[#F26A21]" : "text-gray-300"} mr-1`}
+                className={`transition-colors ${isRated ? '' : 'cursor-pointer'} ${isFilled ? "text-primary fill-primary" : "text-gray-300"} mr-1`}
                 onMouseEnter={() => !isRated && setHoverRating(starValue)}
                 onMouseLeave={() => !isRated && setHoverRating(null)}
                 onClick={() => !isRated && onRatingChange(itemId, type, starValue)}
@@ -191,14 +191,14 @@ const Historikk: React.FC = () => {
             size="sm" 
             disabled={rating === null}
             onClick={() => rating !== null && onRatingSubmit(itemId, type)}
-            className="ml-2 h-7 text-xs px-2 flex-shrink-0 bg-[#F26A21] hover:bg-[#F26A21]/90 text-white border-none"
+            className="ml-2 h-7 text-xs px-2 flex-shrink-0"
           >
             Send
           </Button>
         )}
         
         {isRated && (
-          <span className="text-xs text-[#F26A21] font-medium ml-2 flex-shrink-0">Vurdering sendt</span>
+          <span className="text-xs text-primary font-medium ml-2 flex-shrink-0">Vurdering sendt</span>
         )}
       </div>
     );
@@ -244,19 +244,13 @@ const Historikk: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <div className="flex gap-4">
         <Button 
-          variant="outline"
-          className={`rounded-md font-medium ${activeTab === 'leid' 
-            ? 'bg-[#F26A21] text-white border-[#F26A21] hover:bg-[#F26A21]/90 hover:text-white hover:border-[#F26A21]' 
-            : 'border-[#FEDEC7] bg-white text-gray-700 hover:bg-[#FEDEC7]/30 hover:border-[#F26A21]/50'}`}
+          variant={activeTab === 'leid' ? 'default' : 'outline'}
           onClick={() => setActiveTab('leid')}
         >
           Leid
         </Button>
         <Button 
-          variant="outline"
-          className={`rounded-md font-medium ${activeTab === 'leidUt' 
-            ? 'bg-[#F26A21] text-white border-[#F26A21] hover:bg-[#F26A21]/90 hover:text-white hover:border-[#F26A21]' 
-            : 'border-[#FEDEC7] bg-white text-gray-700 hover:bg-[#FEDEC7]/30 hover:border-[#F26A21]/50'}`}
+          variant={activeTab === 'leidUt' ? 'default' : 'outline'}
           onClick={() => setActiveTab('leidUt')}
         >
           Leid ut
@@ -276,7 +270,7 @@ const Historikk: React.FC = () => {
                 setShowPastOnly(!showPastOnly);
               }}
             />
-            <div className={`w-11 h-6 rounded-full peer ${showPastOnly ? 'bg-[#F26A21]' : 'bg-gray-200'} peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#FEDEC7] peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all`}></div>
+            <div className={`w-11 h-6 rounded-full peer ${showPastOnly ? 'bg-primary' : 'bg-gray-200'} peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all`}></div>
           </label>
         </div>
       </div>
