@@ -11,6 +11,7 @@ import ChangeItemForm from "./components/change-item-form";
 import ChangeAd from "./pages/change-ad";
 import Search from "./pages/search";
 import Messages from "./pages/messages";
+import Historikk from "./pages/historikk";
 
 const App: React.FC<{}> = () => {
     const location = useLocation();
@@ -81,6 +82,14 @@ const App: React.FC<{}> = () => {
                 element={
                     <Layout>
                         <Messages />
+                    </Layout>
+                }
+            />
+            <Route
+                path="/historikk"
+                element={
+                    <Layout>
+                        <Historikk />
                     </Layout>
                 }
             />
