@@ -123,7 +123,6 @@ const Search: React.FC<SearchProps> = ({
                     };
                     setUserLocation(location);
                     setLocationStatus("Posisjon funnet!");
-                    setShowMap(true);
                 },
                 (error) => {
                     console.error("Error getting location:", error);
@@ -316,7 +315,7 @@ const Search: React.FC<SearchProps> = ({
                         <Slider
                             id="radius"
                             min={1}
-                            max={50}
+                            max={100}
                             step={1}
                             value={[localRadius]}
                             onValueChange={handleRadiusChange}

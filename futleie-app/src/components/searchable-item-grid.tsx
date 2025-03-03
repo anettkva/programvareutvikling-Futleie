@@ -52,7 +52,7 @@ const SearchableItemGrid: React.FC = () => {
             }));
 
             // Filter by location if userLocation is provided
-            if (userLocation && radius > 0) {
+            if (userLocation && radius > 0 && radius < 100) {
                 formattedResults = formattedResults.filter((item) => {
                     // Skip items without location data
                     if (!item.lat || !item.lng) return false;
