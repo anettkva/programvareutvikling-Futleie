@@ -56,7 +56,6 @@ const Search: React.FC<SearchProps> = ({
     return (
         <div className="w-full">
             <div className="flex flex-col gap-6 px-5 py-6">
-                <h1 className="text-3xl font-bold">Søk etter utstyr</h1>
                 <div className="flex flex-col space-y-4">
                     <div className="flex flex-row gap-4">
                         <Input

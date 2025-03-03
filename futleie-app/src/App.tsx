@@ -3,12 +3,12 @@ import Layout from "./components/layout";
 import Page from "./app/login/page";
 import Signup from "./app/signup/page";
 import Gallery from "./pages/gallery";
+import SearchPage from "./pages/search";
 import CreateAdPage from "./pages/create-ad";
 import Cookie from "js-cookie";
 import ProfilePage from "./pages/profile-page";
 import ItemInfo from "./components/item-info";
 import ChangeItemForm from "./components/change-item-form";
-import Search from "./components/search";
 import Messages from "./pages/messages";
 import Historikk from "./pages/historikk";
 
@@ -35,7 +35,11 @@ const App: React.FC<{}> = () => {
             <Route path="/" element={<Navigate to="/gallery" replace />} />
             <Route
                 path="/search"
-                element={<Navigate to="/gallery" replace />}
+                element={
+                    <Layout>
+                        <SearchPage />
+                    </Layout>
+                }
             />
             <Route path="/login" element={<Page />} />
             <Route path="/signup" element={<Signup />} />
