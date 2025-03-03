@@ -10,6 +10,7 @@ import ItemInfo from "./components/item-info";
 import ChangeItemForm from "./components/change-item-form";
 import Search from "./components/search";
 import Messages from "./pages/messages";
+import Historikk from "./pages/historikk";
 
 const App: React.FC<{}> = () => {
   const location = useLocation();
@@ -26,62 +27,70 @@ const App: React.FC<{}> = () => {
     return <Navigate to="/gallery" replace />;
   }
 
-  return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/gallery" replace />} />
-      <Route path="/login" element={<Page />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route
-        path="/gallery"
-        element={
-          <Layout>
-            <Gallery />
-          </Layout>
-        }
-      />
-      <Route path="/create-ad" element={<CreateAdPage />} />
-      <Route
-        path="/profile"
-        element={
-          <Layout>
-            <ProfilePage />
-          </Layout>
-        }
-      />
-      <Route
-        path="/item/:itemId"
-        element={
-          <Layout>
-            <ItemInfo />
-          </Layout>
-        }
-      />
-      <Route
-        path="/change-ad/:itemId"
-        element={
-          <Layout>
-            <ChangeItemForm />
-          </Layout>
-        }
-      />
-      <Route
-        path="/search"
-        element={
-          <Layout>
-            <Search />
-          </Layout>
-        }
-      />
-      <Route
-        path="/messages"
-        element={
-          <Layout>
-            <Messages />
-          </Layout>
-        }
-      />
-    </Routes>
-  );
+    return (
+        <Routes>
+            <Route path="/" element={<Navigate to="/gallery" replace />} />
+            <Route path="/login" element={<Page />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route
+                path="/gallery"
+                element={
+                    <Layout>
+                        <Gallery />
+                    </Layout>
+                }
+            />
+            <Route path="/create-ad" element={<CreateAdPage />} />
+            <Route
+                path="/profile"
+                element={
+                    <Layout>
+                        <ProfilePage />
+                    </Layout>
+                }
+            />
+            <Route
+                path="/item/:itemId"
+                element={
+                    <Layout>
+                        <ItemInfo />
+                    </Layout>
+                }
+            />
+            <Route
+                path="/change-ad/:itemId"
+                element={
+                    <Layout>
+                        <ChangeItemForm />
+                    </Layout>
+                }
+            />
+            <Route
+                path="/search"
+                element={
+                    <Layout>
+                        <Search />
+                    </Layout>
+                }
+            />
+            <Route
+                path="/messages"
+                element={
+                    <Layout>
+                        <Messages />
+                    </Layout>
+                }
+            />
+            <Route
+                path="/historikk"
+                element={
+                    <Layout>
+                        <Historikk />
+                    </Layout>
+                }
+            />
+        </Routes>
+    );
 };
 
 export default App;

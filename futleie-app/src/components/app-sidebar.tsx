@@ -1,4 +1,4 @@
-import { Inbox, Search, User, LogOut } from "lucide-react"
+import { Inbox, Search, User, LogOut, History } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import Cookie from "js-cookie"
 import {
@@ -21,6 +21,7 @@ const items = [
   { title: "Meldinger", url: "/messages", icon: Inbox },
   { title: "Søk", url: "/search", icon: Search },
   { title: "Profil", url: "/profile", icon: User },
+  { title: "Historikk", url: "/historikk", icon: History },
 ]
 
 export function AppSidebar() {
