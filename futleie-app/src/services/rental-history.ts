@@ -72,6 +72,21 @@ export const fetchRentalHistory = async (userId: number, pastOnly: boolean = fal
           category: 'Hus',
           location: 'Trondheim, Byåsen'
         }
+      },
+      {
+        id: 6,
+        start_date: '2024-12-20',
+        end_date: '2024-12-25', // Past date that hasn't been rated
+        item_id: 104,
+        rating: null, // Not rated yet
+        Items: {
+          id: 104,
+          title: 'Leilighet med balkong',
+          description: 'Pen leilighet med utsikt over byen',
+          owner_id: 5,
+          category: 'Leilighet',
+          location: 'Stavanger, Sentrum'
+        }
       }
     ];
     
@@ -107,6 +122,22 @@ export const fetchRentalHistory = async (userId: number, pastOnly: boolean = fal
           owner_id: userId,
           category: 'Hytte',
           location: 'Lillehammer, Hafjell'
+        }
+      },
+      {
+        id: 7,
+        start_date: '2024-11-15',
+        end_date: '2024-11-22', // Past date that hasn't been rated
+        item_id: 203,
+        rating: null, // Past rental that hasn't been rated yet
+        renter_id: 8,
+        Items: {
+          id: 203,
+          title: 'Studio leilighet',
+          description: 'Kompakt og moderne studioleilighet',
+          owner_id: userId,
+          category: 'Leilighet',
+          location: 'Trondheim, Solsiden'
         }
       }
     ];
