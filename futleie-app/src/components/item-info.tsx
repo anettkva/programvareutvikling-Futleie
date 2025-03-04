@@ -20,6 +20,7 @@ import {
     CarouselNext,
 } from "./ui/carousel";
 import Cookies from "js-cookie";
+import { MessageCircle } from "lucide-react";
 
 const ItemInfo: React.FC = () => {
     const navigate = useNavigate();
@@ -197,6 +198,22 @@ const ItemInfo: React.FC = () => {
 
         deleteItem();
     }
+    
+    // Function to navigate to messages page with owner ID
+    const handleMessageOwner = () => {
+        if (!currentUserId) {
+            alert("Du må være logget inn for å sende meldinger");
+            return;
+        }
+        
+        if (isOwner) {
+            alert("Du kan ikke sende melding til deg selv");
+            return;
+        }
+        
+        // Navigate to messages page with owner ID as a parameter
+        navigate(`/messages?receiverId=${item.owner_id}&itemId=${item.id}`);
+    }
 
     return (
         <div className="flex flex-col items-center gap-6 m-5">
@@ -252,57 +269,69 @@ const ItemInfo: React.FC = () => {
                         </div>
                     ) : (
                         <>
-                            <label className="text-lg text-gray-600">
-                                Leieperiode:
-                            </label>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        className="w-full justify-start text-left font-normal"
-                                    >
-                                        {dateRange?.from ? (
-                                            dateRange.to ? (
-                                                <>
-                                                    {format(
+                            <div className="flex flex-col gap-4">
+                                <label className="text-lg text-gray-600">
+                                    Leieperiode:
+                                </label>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            className="w-full justify-start text-left font-normal"
+                                        >
+                                            {dateRange?.from ? (
+                                                dateRange.to ? (
+                                                    <>
+                                                        {format(
+                                                            dateRange.from,
+                                                            "LLL dd, y"
+                                                        )}{" "}
+                                                        -{" "}
+                                                        {format(
+                                                            dateRange.to,
+                                                            "LLL dd, y"
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    format(
                                                         dateRange.from,
                                                         "LLL dd, y"
-                                                    )}{" "}
-                                                    -{" "}
-                                                    {format(
-                                                        dateRange.to,
-                                                        "LLL dd, y"
-                                                    )}
-                                                </>
-                                            ) : (
-                                                format(
-                                                    dateRange.from,
-                                                    "LLL dd, y"
+                                                    )
                                                 )
-                                            )
-                                        ) : (
-                                            <span>Velg en dato</span>
-                                        )}
+                                            ) : (
+                                                <span>Velg en dato</span>
+                                            )}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent
+                                        className="w-auto p-0"
+                                        align="start"
+                                    >
+                                        <Calendar
+                                            initialFocus
+                                            mode="range"
+                                            defaultMonth={dateRange?.from}
+                                            selected={dateRange}
+                                            onSelect={setDateRange}
+                                            numberOfMonths={1}
+                                            disabled={bookedDates}
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                                <div className="flex gap-4">
+                                    <Button onClick={handleBooking} className="flex-1">
+                                        Send forespørsel
                                     </Button>
-                                </PopoverTrigger>
-                                <PopoverContent
-                                    className="w-auto p-0"
-                                    align="start"
-                                >
-                                    <Calendar
-                                        initialFocus
-                                        mode="range"
-                                        defaultMonth={dateRange?.from}
-                                        selected={dateRange}
-                                        onSelect={setDateRange}
-                                        numberOfMonths={1}
-                                        disabled={bookedDates}
-                                    />
-                                </PopoverContent>
-                            </Popover>
-                            <Button onClick={handleBooking}>
-                                Send forespørsel
-                            </Button>
+                                    <Button 
+                                        onClick={handleMessageOwner} 
+                                        variant="outline" 
+                                        className="flex items-center gap-2"
+                                    >
+                                        <MessageCircle size={18} />
+                                        Kontakt utleier
+                                    </Button>
+                                </div>
+                            </div>
                         </>
                     )}
                 </div>
