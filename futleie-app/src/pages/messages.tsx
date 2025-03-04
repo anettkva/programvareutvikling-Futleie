@@ -78,7 +78,7 @@ const Messages: React.FC = () => {
       // Only send a message if there are no existing messages
       if (existingMessages.length === 0) {
         // Send initial message about the item
-        const initialMessage = `Hei! Jeg er kontakter deg angående annonsen din "${itemData.title}".`;
+        const initialMessage = `Hei! Jeg tar kontakt angående annonsen din "${itemData.title}".`;
         await sendMessage(userId, receiverId, initialMessage);
         
         // Fetch messages again to include the one we just sent
