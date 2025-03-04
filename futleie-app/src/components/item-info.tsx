@@ -32,6 +32,7 @@ const ItemInfo: React.FC = () => {
     });
     const [bookedDates, setBookedDates] = useState<Date[]>([]);
     const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
     useEffect(() => {
         // Hent bruker fra cookie
@@ -40,6 +41,21 @@ const ItemInfo: React.FC = () => {
             const parsedUser = JSON.parse(userCookie);
             if (parsedUser.id) {
                 setCurrentUserId(parsedUser.id);
+
+                async function fetchIsAdmin() {
+                    const query = supabaseClient
+                        .from("Users")
+                        .select("admin")
+                        .eq("id", parsedUser.id);
+                    const { data, error } = await query.single();
+                    if (error) {
+                        console.error("Error fetching user:", error);
+                    }
+                    if (data) {
+                        setIsAdmin(data.admin);
+                    }
+                }
+                fetchIsAdmin();
             }
         }
     }, []);
@@ -250,6 +266,11 @@ const ItemInfo: React.FC = () => {
                                 Slett annonse
                             </Button>
                         </div>
+                    ) : isAdmin ? (
+                        // Hvis admin
+                        <Button variant="destructive" onClick={deleteAd}>
+                            Slett annonse
+                        </Button>
                     ) : (
                         <>
                             <label className="text-lg text-gray-600">
