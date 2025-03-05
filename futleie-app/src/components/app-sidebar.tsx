@@ -22,7 +22,7 @@ const items = [
   { title: "Søk", url: "/search", icon: Search },
   { title: "Profil", url: "/profile", icon: User },
   { title: "Historikk", url: "/historikk", icon: History },
-  { title: "Maaanage Rentals", url: "/manageRentals", icon: History },
+  { title: "Bookinger", url: "/manage-rentals", icon: History },
 ]
 
 export function AppSidebar() {

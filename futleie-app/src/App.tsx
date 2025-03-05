@@ -11,7 +11,7 @@ import ItemInfo from "./components/item-info";
 import ChangeItemForm from "./components/change-item-form";
 import Messages from "./pages/messages";
 import Historikk from "./pages/historikk";
-import ManageRentals from "./pages/manageRentals";
+import ManageRentals from "./pages/manage-rentals";
 
 const App: React.FC<{}> = () => {
     const location = useLocation();
@@ -95,7 +95,7 @@ const App: React.FC<{}> = () => {
             />
 
             <Route
-                path="/manageRentals"
+                path="/manage-rentals"
                 element={
                         <Layout>
                         <ManageRentals />
