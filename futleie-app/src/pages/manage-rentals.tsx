@@ -7,9 +7,10 @@ import Cookies from "js-cookie";
 
 const ManageRentals: React.FC = () => {
     const [rentals, setRentals] = useState<Rental[]>([]);
-    const [requests, setRequests] = useState<Rental[]>([]);
+    const [requests, setRequests] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [userId, setUserId] = useState<number | null>(null);
 
     useEffect(() => {
         const fetchRentalsAndRequests = async () => {
@@ -24,6 +25,7 @@ const ManageRentals: React.FC = () => {
 
                 const userData = JSON.parse(userCookie);
                 const userId = userData.id;
+                setUserId(userId);
 
                 const { data: rentalData, error: rentalError } = await supabaseClient
                     .from("Rentals")
@@ -33,7 +35,6 @@ const ManageRentals: React.FC = () => {
                 const { data: requestData, error: requestError } = await supabaseClient
                     .from("Rentals")
                     .select("*, Items(owner_id)")
-                    .eq("Items.owner_id", userId)
                     .eq("status", "pending");
 
                 if (rentalError || requestError) {
@@ -128,27 +129,29 @@ const ManageRentals: React.FC = () => {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {requests.map((request) => (
-                                <Card key={request.id} className="mb-4">
-                                    <CardHeader>
-                                        <CardTitle>Utleie ID: {request.id}</CardTitle>
-                                        <CardDescription>Gjenstand ID: {request.item_id}</CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p>Leietaker ID: {request.renter_id}</p>
-                                        <p>Startdato: {new Date(request.start_date).toLocaleDateString()}</p>
-                                        <p>Sluttdato: {new Date(request.end_date).toLocaleDateString()}</p>
-                                        <div className="flex gap-2 mt-4">
-                                            <Button onClick={() => handleUpdateStatus(request.id, "accepted")}>
-                                                Godta
-                                            </Button>
-                                            <Button variant="destructive" onClick={() => handleUpdateStatus(request.id, "declined")}>
-                                                Avslå
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
+                            {requests
+                                .filter((request) => request.Items.owner_id === userId)
+                                .map((request) => (
+                                    <Card key={request.id} className="mb-4">
+                                        <CardHeader>
+                                            <CardTitle>Utleie ID: {request.id}</CardTitle>
+                                            <CardDescription>Gjenstand ID: {request.item_id}</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p>Leietaker ID: {request.renter_id}</p>
+                                            <p>Startdato: {new Date(request.start_date).toLocaleDateString()}</p>
+                                            <p>Sluttdato: {new Date(request.end_date).toLocaleDateString()}</p>
+                                            <div className="flex gap-2 mt-4">
+                                                <Button onClick={() => handleUpdateStatus(request.id, "accepted")}>
+                                                    Godta
+                                                </Button>
+                                                <Button variant="destructive" onClick={() => handleUpdateStatus(request.id, "declined")}>
+                                                    Avslå
+                                                </Button>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
                         </div>
                     )}
                 </div>
