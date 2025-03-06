@@ -76,6 +76,19 @@ const ManageRentals: React.FC = () => {
         }
     };
 
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case "accepted":
+                return "text-green-500";
+            case "declined":
+                return "text-red-500";
+            case "pending":
+                return "text-yellow-500";
+            default:
+                return "";
+        }
+    };
+
     if (loading) {
         return (
             <div className="w-full h-[calc(100vh-4rem)] flex items-center justify-center">
@@ -116,7 +129,7 @@ const ManageRentals: React.FC = () => {
                                         <p>Leietaker ID: {rental.renter_id}</p>
                                         <p>Startdato: {new Date(rental.start_date).toLocaleDateString()}</p>
                                         <p>Sluttdato: {new Date(rental.end_date).toLocaleDateString()}</p>
-                                        <p>Status: {rental.status}</p>
+                                        <p className={getStatusColor(rental.status)}>Status: {rental.status}</p>
                                     </CardContent>
                                 </Card>
                             ))}
