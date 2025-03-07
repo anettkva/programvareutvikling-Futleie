@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from "react";
 import supabaseClient from "@/supabaseClient";
 import { Rental } from "@/Types/Rental";
+import { Item } from "@/Types/Item";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Cookies from "js-cookie";
 
+interface RentalWithItem extends Rental {
+    item_title?: string;
+    item_location?: string;
+    renter_name?: string;
+}
+
 const ManageRentals: React.FC = () => {
-    const [rentals, setRentals] = useState<Rental[]>([]);
-    const [requests, setRequests] = useState<any[]>([]);
+    const [rentals, setRentals] = useState<RentalWithItem[]>([]);
+    const [requests, setRequests] = useState<RentalWithItem[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
@@ -28,27 +35,41 @@ const ManageRentals: React.FC = () => {
                 const userId = userData.id;
                 setUserId(userId);
 
-                // Fetch rentals where user is the renter
+                // Fetch rentals where user is the renter, including item details
                 const { data: rentalData, error: rentalError } = await supabaseClient
                     .from("Rentals")
-                    .select("*")
+                    .select("*, Items(*)")
                     .eq("renter_id", userId);
 
-                // Fetch all rentals for items owned by the user
+                // Fetch all rentals for items owned by the user, including item details and renter information
                 const { data: requestData, error: requestError } = await supabaseClient
                     .from("Rentals")
-                    .select("*, Items(owner_id)")
+                    .select("*, Items(*), Users!Rentals_renter_id_fkey(*)")
                     .not('Items', 'is', null);
 
                 if (rentalError || requestError) {
                     setError("Error fetching rentals or requests");
                     console.error(rentalError || requestError);
                 } else {
-                    setRentals(rentalData || []);
-                    // Filter requests to only include those for items owned by the user
-                    const filteredRequests = (requestData || []).filter(
-                        request => request.Items && request.Items.owner_id === userId
-                    );
+                    // Process rental data to include item title and location
+                    const processedRentals = (rentalData || []).map(rental => ({
+                        ...rental,
+                        item_title: rental.Items?.title || 'Ukjent gjenstand',
+                        item_location: rental.Items?.location || 'Ukjent adresse'
+                    }));
+                    
+                    setRentals(processedRentals);
+                    
+                    // Filter and process requests to only include those for items owned by the user
+                    const filteredRequests = (requestData || [])
+                        .filter(request => request.Items && request.Items.owner_id === userId)
+                        .map(request => ({
+                            ...request,
+                            item_title: request.Items?.title || 'Ukjent gjenstand',
+                            item_location: request.Items?.location || 'Ukjent adresse',
+                            renter_name: request.Users?.username || `Bruker #${request.renter_id}`
+                        }));
+                        
                     setRequests(filteredRequests);
                 }
             } catch (err) {
@@ -152,19 +173,23 @@ const ManageRentals: React.FC = () => {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {filteredRentals.map((rental) => (
-                                <Card key={rental.id} className="mb-4">
-                                    <CardHeader>
-                                        <CardTitle>Utleie ID: {rental.id}</CardTitle>
-                                        <CardDescription>Gjenstand ID: {rental.item_id}</CardDescription>
+                                <Card key={rental.id} className="mb-4 w-full h-64 flex flex-col overflow-hidden border-[#FEDEC7]">
+                                    <CardHeader className="flex-shrink-0 pb-2">
+                                        <CardTitle className="text-lg truncate">{rental.item_title}</CardTitle>
+                                        <CardDescription className="truncate">{rental.item_location}</CardDescription>
                                     </CardHeader>
-                                    <CardContent>
-                                        <p>Leietaker ID: {rental.renter_id}</p>
-                                        <p>Startdato: {new Date(rental.start_date).toLocaleDateString()}</p>
-                                        <p>Sluttdato: {new Date(rental.end_date).toLocaleDateString()}</p>
-                                        <p className={getStatusColor(rental.status)}>
-                                            Status: {rental.status === 'accepted' ? 'Godtatt' : 
-                                                    rental.status === 'declined' ? 'Avslått' : 'Ventende'}
-                                        </p>
+                                    <CardContent className="flex-grow flex flex-col justify-between py-2">
+                                        <div>
+                                            <p className="text-sm font-medium">Periode:</p>
+                                            <p className="text-sm text-muted-foreground">{new Date(rental.start_date).toLocaleDateString()} - {new Date(rental.end_date).toLocaleDateString()}</p>
+                                        </div>
+                                        <div className="mt-2">
+                                            <p className="text-sm font-medium">Status:</p>
+                                            <p className={`text-sm ${getStatusColor(rental.status)}`}>
+                                                {rental.status === 'accepted' ? 'Godtatt' : 
+                                                 rental.status === 'declined' ? 'Avslått' : 'Ventende'}
+                                            </p>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             ))}
@@ -178,29 +203,37 @@ const ManageRentals: React.FC = () => {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {filteredRequests.map((request) => (
-                                <Card key={request.id} className="mb-4">
-                                    <CardHeader>
-                                        <CardTitle>Utleie ID: {request.id}</CardTitle>
-                                        <CardDescription>Gjenstand ID: {request.item_id}</CardDescription>
+                                <Card key={request.id} className="mb-4 w-full h-64 flex flex-col overflow-hidden border-[#FEDEC7]">
+                                    <CardHeader className="flex-shrink-0 pb-2">
+                                        <CardTitle className="text-lg truncate">{request.item_title}</CardTitle>
+                                        <CardDescription className="truncate">{request.item_location}</CardDescription>
                                     </CardHeader>
-                                    <CardContent>
-                                        <p>Leietaker ID: {request.renter_id}</p>
-                                        <p>Startdato: {new Date(request.start_date).toLocaleDateString()}</p>
-                                        <p>Sluttdato: {new Date(request.end_date).toLocaleDateString()}</p>
-                                        {activeTab === 'pending' ? (
-                                            <div className="flex gap-2 mt-4">
-                                                <Button onClick={() => handleUpdateStatus(request.id, "accepted")}>
-                                                    Godta
-                                                </Button>
-                                                <Button variant="destructive" onClick={() => handleUpdateStatus(request.id, "declined")}>
-                                                    Avslå
-                                                </Button>
-                                            </div>
-                                        ) : (
-                                            <p className={getStatusColor(request.status)}>
-                                                Status: {request.status === 'accepted' ? 'Godtatt' : 'Avslått'}
-                                            </p>
-                                        )}
+                                    <CardContent className="flex-grow flex flex-col justify-between py-2">
+                                        <div>
+                                            <p className="text-sm font-medium">Leietaker:</p>
+                                            <p className="text-sm text-muted-foreground">{request.renter_name}</p>
+                                            <p className="text-sm font-medium mt-2">Periode:</p>
+                                            <p className="text-sm text-muted-foreground">{new Date(request.start_date).toLocaleDateString()} - {new Date(request.end_date).toLocaleDateString()}</p>
+                                        </div>
+                                        <div className="mt-2">
+                                            {activeTab === 'pending' ? (
+                                                <div className="flex gap-2">
+                                                    <Button size="sm" onClick={() => handleUpdateStatus(request.id, "accepted")}>
+                                                        Godta
+                                                    </Button>
+                                                    <Button size="sm" variant="destructive" onClick={() => handleUpdateStatus(request.id, "declined")}>
+                                                        Avslå
+                                                    </Button>
+                                                </div>
+                                            ) : (
+                                                <div>
+                                                    <p className="text-sm font-medium">Status:</p>
+                                                    <p className={`text-sm ${getStatusColor(request.status)}`}>
+                                                        {request.status === 'accepted' ? 'Godtatt' : 'Avslått'}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
                                     </CardContent>
                                 </Card>
                             ))}
