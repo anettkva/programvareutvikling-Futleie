@@ -105,8 +105,9 @@ const ItemInfo: React.FC = () => {
         if (itemId) {
             const { data, error } = await supabaseClient
                 .from("Rentals")
-                .select("start_date, end_date")
-                .eq("item_id", itemId);
+                .select("start_date, end_date, status")
+                .eq("item_id", itemId)
+                .eq("status", "accepted"); // Kun hente godkjente utleier
 
             if (error) {
                 console.error("Error fetching booked dates:", error);
