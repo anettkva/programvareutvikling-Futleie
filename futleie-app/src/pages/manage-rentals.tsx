@@ -10,6 +10,7 @@ interface RentalWithItem extends Rental {
     item_title?: string;
     item_location?: string;
     renter_name?: string;
+    owner_name?: string;
 }
 
 const ManageRentals: React.FC = () => {
@@ -40,6 +41,26 @@ const ManageRentals: React.FC = () => {
                     .from("Rentals")
                     .select("*, Items(*)")
                     .eq("renter_id", userId);
+                
+                // Get owner IDs from items
+                const ownerIds = rentalData?.map(rental => rental.Items?.owner_id).filter(Boolean) || [];
+                
+                // Fetch owner information if there are any owner IDs
+                let ownerData: Record<number, string> = {};
+                if (ownerIds.length > 0) {
+                    const { data: owners } = await supabaseClient
+                        .from("Users")
+                        .select("id, username")
+                        .in("id", ownerIds);
+                    
+                    // Create a map of owner ID to username
+                    if (owners) {
+                        ownerData = owners.reduce((acc: Record<number, string>, owner) => {
+                            acc[owner.id] = owner.username;
+                            return acc;
+                        }, {});
+                    }
+                }
 
                 // Fetch all rentals for items owned by the user, including item details and renter information
                 const { data: requestData, error: requestError } = await supabaseClient
@@ -51,12 +72,16 @@ const ManageRentals: React.FC = () => {
                     setError("Error fetching rentals or requests");
                     console.error(rentalError || requestError);
                 } else {
-                    // Process rental data to include item title and location
-                    const processedRentals = (rentalData || []).map(rental => ({
-                        ...rental,
-                        item_title: rental.Items?.title || 'Ukjent gjenstand',
-                        item_location: rental.Items?.location || 'Ukjent adresse'
-                    }));
+                    // Process rental data to include item title, location and owner name
+                    const processedRentals = (rentalData || []).map(rental => {
+                        const ownerId = rental.Items?.owner_id;
+                        return {
+                            ...rental,
+                            item_title: rental.Items?.title || 'Ukjent gjenstand',
+                            item_location: rental.Items?.location || 'Ukjent adresse',
+                            owner_name: ownerId && ownerData[ownerId] ? ownerData[ownerId] : `Eier #${ownerId || 'ukjent'}`
+                        };
+                    });
                     
                     setRentals(processedRentals);
                     
@@ -180,7 +205,9 @@ const ManageRentals: React.FC = () => {
                                     </CardHeader>
                                     <CardContent className="flex-grow flex flex-col justify-between py-2">
                                         <div>
-                                            <p className="text-sm font-medium">Periode:</p>
+                                            <p className="text-sm font-medium">Utleier:</p>
+                                            <p className="text-sm text-muted-foreground">{rental.owner_name}</p>
+                                            <p className="text-sm font-medium mt-2">Periode:</p>
                                             <p className="text-sm text-muted-foreground">{new Date(rental.start_date).toLocaleDateString()} - {new Date(rental.end_date).toLocaleDateString()}</p>
                                         </div>
                                         <div className="mt-2">
@@ -217,7 +244,7 @@ const ManageRentals: React.FC = () => {
                                         </div>
                                         <div className="mt-2">
                                             {activeTab === 'pending' ? (
-                                                <div className="flex gap-2">
+                                                <div className="flex gap-2 -mt-10">
                                                     <Button size="sm" onClick={() => handleUpdateStatus(request.id, "accepted")}>
                                                         Godta
                                                     </Button>
