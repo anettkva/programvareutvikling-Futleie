@@ -108,8 +108,74 @@ const ManageRentals: React.FC = () => {
         fetchRentalsAndRequests();
     }, []);
 
+    // Sjekk om datoene er ledige (ingen overlappende godkjente utleier)
+    const checkIfDatesAvailable = async (rentalId: number) => {
+        try {
+            // Hent informasjon om den aktuelle utleien
+            const { data: rentalData, error: rentalError } = await supabaseClient
+                .from("Rentals")
+                .select("item_id, start_date, end_date")
+                .eq("id", rentalId)
+                .single();
+
+            if (rentalError || !rentalData) {
+                console.error("Error fetching rental:", rentalError);
+                return false;
+            }
+
+            // Hent alle godkjente utleier for samme gjenstand
+            const { data: existingRentals, error: existingError } = await supabaseClient
+                .from("Rentals")
+                .select("start_date, end_date")
+                .eq("item_id", rentalData.item_id)
+                .eq("status", "accepted")
+                .neq("id", rentalId); // Ekskluder den aktuelle utleien
+
+            if (existingError) {
+                console.error("Error fetching existing rentals:", existingError);
+                return false;
+            }
+
+            if (!existingRentals || existingRentals.length === 0) {
+                return true; // Ingen eksisterende utleier, så datoene er ledige
+            }
+
+            // Konverter datoene til Date-objekter for å unngå tidssoneproblemer
+            const startDate = new Date(rentalData.start_date + 'T12:00:00');
+            const endDate = new Date(rentalData.end_date + 'T12:00:00');
+
+            // Sjekk om det er overlapp med eksisterende utleier
+            for (const rental of existingRentals) {
+                const existingStart = new Date(rental.start_date + 'T12:00:00');
+                const existingEnd = new Date(rental.end_date + 'T12:00:00');
+
+                // Sjekk om datoene overlapper
+                if (
+                    (startDate <= existingEnd && endDate >= existingStart) ||
+                    (existingStart <= endDate && existingEnd >= startDate)
+                ) {
+                    return false; // Datoene overlapper
+                }
+            }
+
+            return true; // Ingen overlapp, datoene er ledige
+        } catch (err) {
+            console.error("Error checking date availability:", err);
+            return false;
+        }
+    };
+
     const handleUpdateStatus = async (rentalId: number, status: "accepted" | "declined") => {
         try {
+            // Hvis status er "accepted", sjekk først om datoene er ledige
+            if (status === "accepted") {
+                const datesAvailable = await checkIfDatesAvailable(rentalId);
+                if (!datesAvailable) {
+                    alert("Kan ikke godta forespørselen fordi datoene overlapper med en annen godkjent utleie.");
+                    return;
+                }
+            }
+
             const { error } = await supabaseClient
                 .from("Rentals")
                 .update({ status })
