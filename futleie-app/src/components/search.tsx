@@ -168,7 +168,7 @@ const Search: React.FC<SearchProps> = ({
                         <Input
                             type="text"
                             placeholder="Søk..."
-                            className="max-w-md"
+                            className="max-w-md bg-white"
                             value={localSearchTerm}
                             onChange={(e) => handleSearch(e.target.value)}
                         />
