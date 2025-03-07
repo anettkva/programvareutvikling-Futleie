@@ -20,11 +20,12 @@ import supabaseClient from "@/supabaseClient";
 
 // Menu items
 const menuItems = [
-    { title: "Meldinger", url: "/messages", icon: Inbox },
-    { title: "Søk", url: "/search", icon: Search },
-    { title: "Profil", url: "/profile", icon: User },
-    { title: "Historikk", url: "/historikk", icon: History },
-];
+  { title: "Meldinger", url: "/messages", icon: Inbox },
+  { title: "Søk", url: "/search", icon: Search },
+  { title: "Profil", url: "/profile", icon: User },
+  { title: "Historikk", url: "/historikk", icon: History },
+  { title: "Bookinger", url: "/manage-rentals", icon: MonitorCog },
+]
 
 export function AppSidebar() {
     const navigate = useNavigate();

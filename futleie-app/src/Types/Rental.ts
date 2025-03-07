@@ -4,4 +4,5 @@ export type Rental = {
   end_date: Date;
   item_id: number;
   renter_id: number;
+  status: "accepted" | "declined" | "pending";
 };
