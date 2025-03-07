@@ -11,6 +11,7 @@ const ManageRentals: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
+    const [activeTab, setActiveTab] = useState<'pending' | 'accepted' | 'declined'>('pending');
 
     useEffect(() => {
         const fetchRentalsAndRequests = async () => {
@@ -105,21 +106,46 @@ const ManageRentals: React.FC = () => {
         );
     }
 
+    const filteredRentals = rentals.filter(rental => rental.status === activeTab);
+    const filteredRequests = requests.filter(request => request.status === activeTab && request.Items.owner_id === userId);
+
     return (
         <div className="w-full h-[calc(100vh-4rem)]">
             <div className="flex flex-col h-full gap-6 px-5 py-6">
                 <div className="flex justify-between items-center">
                     <h1 className="text-3xl font-bold">Administrer utleieforespørsler</h1>
                 </div>
+                <div className="flex justify-between items-center mb-6">
+                    <div className="flex gap-4">
+                        <Button 
+                            variant={activeTab === 'pending' ? 'default' : 'outline'}
+                            onClick={() => setActiveTab('pending')}
+                        >
+                            Ventende
+                        </Button>
+                        <Button
+                            variant={activeTab === 'accepted' ? 'default' : 'outline'}
+                            onClick={() => setActiveTab('accepted')}
+                        >
+                            Godtatt
+                        </Button>
+                        <Button
+                            variant={activeTab === 'declined' ? 'default' : 'outline'}
+                            onClick={() => setActiveTab('declined')}
+                        >
+                            Avslått
+                        </Button>
+                    </div>
+                </div>
                 <div className="flex-1 overflow-y-auto">
                     <h2 className="text-2xl font-bold">Dine forespørsler</h2>
-                    {rentals.length === 0 ? (
+                    {filteredRentals.length === 0 ? (
                         <div className="flex items-center justify-center h-full">
                             <p className="text-gray-500">Ingen utleieforespørsler</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {rentals.map((rental) => (
+                            {filteredRentals.map((rental) => (
                                 <Card key={rental.id} className="mb-4">
                                     <CardHeader>
                                         <CardTitle>Utleie ID: {rental.id}</CardTitle>
@@ -136,35 +162,33 @@ const ManageRentals: React.FC = () => {
                         </div>
                     )}
                     <h2 className="text-2xl font-bold mt-6">Forespørsler for dine gjenstander</h2>
-                    {requests.length === 0 ? (
+                    {filteredRequests.length === 0 ? (
                         <div className="flex items-center justify-center h-full">
                             <p className="text-gray-500">Ingen ventende forespørsler</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {requests
-                                .filter((request) => request.Items.owner_id === userId)
-                                .map((request) => (
-                                    <Card key={request.id} className="mb-4">
-                                        <CardHeader>
-                                            <CardTitle>Utleie ID: {request.id}</CardTitle>
-                                            <CardDescription>Gjenstand ID: {request.item_id}</CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <p>Leietaker ID: {request.renter_id}</p>
-                                            <p>Startdato: {new Date(request.start_date).toLocaleDateString()}</p>
-                                            <p>Sluttdato: {new Date(request.end_date).toLocaleDateString()}</p>
-                                            <div className="flex gap-2 mt-4">
-                                                <Button onClick={() => handleUpdateStatus(request.id, "accepted")}>
-                                                    Godta
-                                                </Button>
-                                                <Button variant="destructive" onClick={() => handleUpdateStatus(request.id, "declined")}>
-                                                    Avslå
-                                                </Button>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
+                            {filteredRequests.map((request) => (
+                                <Card key={request.id} className="mb-4">
+                                    <CardHeader>
+                                        <CardTitle>Utleie ID: {request.id}</CardTitle>
+                                        <CardDescription>Gjenstand ID: {request.item_id}</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p>Leietaker ID: {request.renter_id}</p>
+                                        <p>Startdato: {new Date(request.start_date).toLocaleDateString()}</p>
+                                        <p>Sluttdato: {new Date(request.end_date).toLocaleDateString()}</p>
+                                        <div className="flex gap-2 mt-4">
+                                            <Button onClick={() => handleUpdateStatus(request.id, "accepted")}>
+                                                Godta
+                                            </Button>
+                                            <Button variant="destructive" onClick={() => handleUpdateStatus(request.id, "declined")}>
+                                                Avslå
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
                         </div>
                     )}
                 </div>
