@@ -28,22 +28,28 @@ const ManageRentals: React.FC = () => {
                 const userId = userData.id;
                 setUserId(userId);
 
+                // Fetch rentals where user is the renter
                 const { data: rentalData, error: rentalError } = await supabaseClient
                     .from("Rentals")
                     .select("*")
                     .eq("renter_id", userId);
 
+                // Fetch all rentals for items owned by the user
                 const { data: requestData, error: requestError } = await supabaseClient
                     .from("Rentals")
                     .select("*, Items(owner_id)")
-                    .eq("status", "pending");
+                    .not('Items', 'is', null);
 
                 if (rentalError || requestError) {
                     setError("Error fetching rentals or requests");
                     console.error(rentalError || requestError);
                 } else {
-                    setRentals(rentalData);
-                    setRequests(requestData);
+                    setRentals(rentalData || []);
+                    // Filter requests to only include those for items owned by the user
+                    const filteredRequests = (requestData || []).filter(
+                        request => request.Items && request.Items.owner_id === userId
+                    );
+                    setRequests(filteredRequests);
                 }
             } catch (err) {
                 console.error("Error fetching rentals or requests:", err);
@@ -107,7 +113,7 @@ const ManageRentals: React.FC = () => {
     }
 
     const filteredRentals = rentals.filter(rental => rental.status === activeTab);
-    const filteredRequests = requests.filter(request => request.status === activeTab && request.Items.owner_id === userId);
+    const filteredRequests = requests.filter(request => request.status === activeTab);
 
     return (
         <div className="w-full h-[calc(100vh-4rem)]">
@@ -155,7 +161,10 @@ const ManageRentals: React.FC = () => {
                                         <p>Leietaker ID: {rental.renter_id}</p>
                                         <p>Startdato: {new Date(rental.start_date).toLocaleDateString()}</p>
                                         <p>Sluttdato: {new Date(rental.end_date).toLocaleDateString()}</p>
-                                        <p className={getStatusColor(rental.status)}>Status: {rental.status}</p>
+                                        <p className={getStatusColor(rental.status)}>
+                                            Status: {rental.status === 'accepted' ? 'Godtatt' : 
+                                                    rental.status === 'declined' ? 'Avslått' : 'Ventende'}
+                                        </p>
                                     </CardContent>
                                 </Card>
                             ))}
@@ -178,14 +187,20 @@ const ManageRentals: React.FC = () => {
                                         <p>Leietaker ID: {request.renter_id}</p>
                                         <p>Startdato: {new Date(request.start_date).toLocaleDateString()}</p>
                                         <p>Sluttdato: {new Date(request.end_date).toLocaleDateString()}</p>
-                                        <div className="flex gap-2 mt-4">
-                                            <Button onClick={() => handleUpdateStatus(request.id, "accepted")}>
-                                                Godta
-                                            </Button>
-                                            <Button variant="destructive" onClick={() => handleUpdateStatus(request.id, "declined")}>
-                                                Avslå
-                                            </Button>
-                                        </div>
+                                        {activeTab === 'pending' ? (
+                                            <div className="flex gap-2 mt-4">
+                                                <Button onClick={() => handleUpdateStatus(request.id, "accepted")}>
+                                                    Godta
+                                                </Button>
+                                                <Button variant="destructive" onClick={() => handleUpdateStatus(request.id, "declined")}>
+                                                    Avslå
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <p className={getStatusColor(request.status)}>
+                                                Status: {request.status === 'accepted' ? 'Godtatt' : 'Avslått'}
+                                            </p>
+                                        )}
                                     </CardContent>
                                 </Card>
                             ))}
