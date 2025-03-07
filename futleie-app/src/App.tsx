@@ -11,6 +11,7 @@ import ItemInfo from "./components/item-info";
 import ChangeItemForm from "./components/change-item-form";
 import Messages from "./pages/messages";
 import Historikk from "./pages/historikk";
+import AdminDashboard from "./components/admin-dashboard";
 import ManageRentals from "./pages/manage-rentals";
 
 const App: React.FC<{}> = () => {
@@ -90,15 +91,6 @@ const App: React.FC<{}> = () => {
                 element={
                     <Layout>
                         <Historikk />
-                    </Layout>
-                }
-            />
-
-            <Route
-                path="/manage-rentals"
-                element={
-                        <Layout>
-                        <ManageRentals />
                     </Layout>
                 }
             />

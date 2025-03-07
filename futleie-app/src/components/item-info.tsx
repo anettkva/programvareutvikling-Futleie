@@ -33,6 +33,7 @@ const ItemInfo: React.FC = () => {
     });
     const [bookedDates, setBookedDates] = useState<Date[]>([]);
     const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
     useEffect(() => {
         // Hent bruker fra cookie
@@ -41,6 +42,21 @@ const ItemInfo: React.FC = () => {
             const parsedUser = JSON.parse(userCookie);
             if (parsedUser.id) {
                 setCurrentUserId(parsedUser.id);
+
+                async function fetchIsAdmin() {
+                    const query = supabaseClient
+                        .from("Users")
+                        .select("admin")
+                        .eq("id", parsedUser.id);
+                    const { data, error } = await query.single();
+                    if (error) {
+                        console.error("Error fetching user:", error);
+                    }
+                    if (data) {
+                        setIsAdmin(data.admin);
+                    }
+                }
+                fetchIsAdmin();
             }
         }
     }, []);
@@ -198,22 +214,22 @@ const ItemInfo: React.FC = () => {
 
         deleteItem();
     }
-    
+
     // Function to navigate to messages page with owner ID
     const handleMessageOwner = () => {
         if (!currentUserId) {
             alert("Du må være logget inn for å sende meldinger");
             return;
         }
-        
+
         if (isOwner) {
             alert("Du kan ikke sende melding til deg selv");
             return;
         }
-        
+
         // Navigate to messages page with owner ID as a parameter
         navigate(`/messages?receiverId=${item.owner_id}&itemId=${item.id}`);
-    }
+    };
 
     return (
         <div className="flex flex-col items-center gap-6 m-5">
@@ -319,18 +335,31 @@ const ItemInfo: React.FC = () => {
                                     </PopoverContent>
                                 </Popover>
                                 <div className="flex gap-4">
-                                    <Button onClick={handleBooking} className="flex-1">
+                                    <Button
+                                        onClick={handleBooking}
+                                        className="flex-1"
+                                    >
                                         Send forespørsel
                                     </Button>
-                                    <Button 
-                                        onClick={handleMessageOwner} 
-                                        variant="outline" 
+                                    <Button
+                                        onClick={handleMessageOwner}
+                                        variant="outline"
                                         className="flex items-center gap-2"
                                     >
                                         <MessageCircle size={18} />
                                         Kontakt utleier
                                     </Button>
                                 </div>
+                                {isAdmin ? ( // Hvis admin
+                                    <Button
+                                        variant="destructive"
+                                        onClick={deleteAd}
+                                    >
+                                        Slett annonse
+                                    </Button>
+                                ) : (
+                                    <></>
+                                )}
                             </div>
                         </>
                     )}
