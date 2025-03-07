@@ -140,7 +140,7 @@ const ManageRentals: React.FC = () => {
                 <div className="flex-1 overflow-y-auto">
                     <h2 className="text-2xl font-bold">Dine forespørsler</h2>
                     {filteredRentals.length === 0 ? (
-                        <div className="flex items-center justify-center h-full">
+                        <div className="flex items-center justify-center h-[calc(30vh-4rem)]">
                             <p className="text-gray-500">Ingen utleieforespørsler</p>
                         </div>
                     ) : (
@@ -163,7 +163,7 @@ const ManageRentals: React.FC = () => {
                     )}
                     <h2 className="text-2xl font-bold mt-6">Forespørsler for dine gjenstander</h2>
                     {filteredRequests.length === 0 ? (
-                        <div className="flex items-center justify-center h-full">
+                        <div className="flex items-center justify-center h-[calc(30vh-4rem)]">
                             <p className="text-gray-500">Ingen ventende forespørsler</p>
                         </div>
                     ) : (
