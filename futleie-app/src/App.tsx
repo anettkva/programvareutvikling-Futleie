@@ -94,6 +94,15 @@ const App: React.FC<{}> = () => {
                     </Layout>
                 }
             />
+
+            <Route
+                path="/manage-rentals"
+                element={
+                    <Layout>
+                        <ManageRentals />
+                    </Layout>
+                }
+            />
         </Routes>
     );
 };
