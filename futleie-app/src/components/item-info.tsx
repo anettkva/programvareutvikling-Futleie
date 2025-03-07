@@ -114,14 +114,18 @@ const ItemInfo: React.FC = () => {
             }
 
             const dates = data.flatMap(({ start_date, end_date }) => {
-                const startDate = new Date(start_date);
-                const endDate = new Date(end_date);
+                // Fikse tidssoneproblemet ved å sette klokkeslettet til 12:00
+                // Dette sikrer at datoen ikke forskyves på grunn av tidssonekonvertering
+                const startDate = new Date(start_date + 'T12:00:00');
+                const endDate = new Date(end_date + 'T12:00:00');
+                
                 const datesArray = [];
                 for (
-                    let date = startDate;
+                    let date = new Date(startDate);
                     date <= endDate;
                     date.setDate(date.getDate() + 1)
                 ) {
+                    // Opprette en ny dato for hver dag for å unngå referanseproblemer
                     datesArray.push(new Date(date));
                 }
                 return datesArray;
@@ -173,12 +177,25 @@ const ItemInfo: React.FC = () => {
 
         const renterId = JSON.parse(userCookie).id;
 
+        // Konverter datoene til ISO-format (YYYY-MM-DD) for å unngå tidssoneproblemer
+        // Bruk en mer robust metode som tar hensyn til lokal dato
+        const formatDateToISO = (date: Date | undefined) => {
+            if (!date) return undefined;
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Måneder er 0-indeksert
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        
+        const startDateISO = formatDateToISO(dateRange.from);
+        const endDateISO = formatDateToISO(dateRange.to);
+
         const { error } = await supabaseClient.from("Rentals").insert([
             {
                 item_id: itemId,
                 renter_id: renterId,
-                start_date: dateRange.from,
-                end_date: dateRange.to,
+                start_date: startDateISO,
+                end_date: endDateISO,
             },
         ]);
 

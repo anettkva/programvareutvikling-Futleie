@@ -208,7 +208,7 @@ const ManageRentals: React.FC = () => {
                                             <p className="text-sm font-medium">Utleier:</p>
                                             <p className="text-sm text-muted-foreground">{rental.owner_name}</p>
                                             <p className="text-sm font-medium mt-2">Periode:</p>
-                                            <p className="text-sm text-muted-foreground">{new Date(rental.start_date).toLocaleDateString()} - {new Date(rental.end_date).toLocaleDateString()}</p>
+                                            <p className="text-sm text-muted-foreground">{new Date(rental.start_date + 'T12:00:00').toLocaleDateString()} - {new Date(rental.end_date + 'T12:00:00').toLocaleDateString()}</p>
                                         </div>
                                         <div className="mt-2">
                                             <p className="text-sm font-medium">Status:</p>
@@ -240,7 +240,7 @@ const ManageRentals: React.FC = () => {
                                             <p className="text-sm font-medium">Leietaker:</p>
                                             <p className="text-sm text-muted-foreground">{request.renter_name}</p>
                                             <p className="text-sm font-medium mt-2">Periode:</p>
-                                            <p className="text-sm text-muted-foreground">{new Date(request.start_date).toLocaleDateString()} - {new Date(request.end_date).toLocaleDateString()}</p>
+                                            <p className="text-sm text-muted-foreground">{new Date(request.start_date + 'T12:00:00').toLocaleDateString()} - {new Date(request.end_date + 'T12:00:00').toLocaleDateString()}</p>
                                         </div>
                                         <div className="mt-2">
                                             {activeTab === 'pending' ? (
