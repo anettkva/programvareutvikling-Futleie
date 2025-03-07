@@ -103,6 +103,14 @@ const App: React.FC<{}> = () => {
                     </Layout>
                 }
             />
+            <Route
+                path="/admin"
+                element={
+                    <Layout>
+                        <AdminDashboard />
+                    </Layout>
+                }
+            />
         </Routes>
     );
 };

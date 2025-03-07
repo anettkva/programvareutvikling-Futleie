@@ -1,4 +1,12 @@
-import { Inbox, Search, User, LogOut, History, MonitorCog } from "lucide-react";
+import {
+    Inbox,
+    Search,
+    User,
+    LogOut,
+    History,
+    ReceiptText,
+    UserRoundCog,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Cookie from "js-cookie";
 import {
@@ -20,12 +28,12 @@ import supabaseClient from "@/supabaseClient";
 
 // Menu items
 const menuItems = [
-  { title: "Meldinger", url: "/messages", icon: Inbox },
-  { title: "Søk", url: "/search", icon: Search },
-  { title: "Profil", url: "/profile", icon: User },
-  { title: "Historikk", url: "/historikk", icon: History },
-  { title: "Bookinger", url: "/manage-rentals", icon: MonitorCog },
-]
+    { title: "Meldinger", url: "/messages", icon: Inbox },
+    { title: "Søk", url: "/search", icon: Search },
+    { title: "Profil", url: "/profile", icon: User },
+    { title: "Historikk", url: "/historikk", icon: History },
+    { title: "Bookinger", url: "/manage-rentals", icon: ReceiptText },
+];
 
 export function AppSidebar() {
     const navigate = useNavigate();
@@ -57,7 +65,11 @@ export function AppSidebar() {
                     ) {
                         setItems([
                             ...items,
-                            { title: "Admin", url: "/admin", icon: MonitorCog },
+                            {
+                                title: "Admin",
+                                url: "/admin",
+                                icon: UserRoundCog,
+                            },
                         ]);
                     }
                 }
