@@ -28,11 +28,11 @@ import supabaseClient from "@/supabaseClient";
 
 // Menu items
 const menuItems = [
-    { title: "Meldinger", url: "/messages", icon: Inbox },
     { title: "Søk", url: "/search", icon: Search },
-    { title: "Profil", url: "/profile", icon: User },
+    { title: "Meldinger", url: "/messages", icon: Inbox },
     { title: "Historikk", url: "/historikk", icon: History },
     { title: "Bookinger", url: "/manage-rentals", icon: ReceiptText },
+    { title: "Profil", url: "/profile", icon: User },
 ];
 
 export function AppSidebar() {

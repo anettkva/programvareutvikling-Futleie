@@ -265,7 +265,7 @@ const Historikk: React.FC = () => {
         
         {/* Past/All toggle */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Vis kun tidligre</span>
+          <span className="text-sm text-muted-foreground">Vis kun tidligere</span>
           <label className="relative inline-flex items-center cursor-pointer">
             <input 
               type="checkbox" 
