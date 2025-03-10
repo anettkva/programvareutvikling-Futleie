@@ -13,6 +13,7 @@ import Messages from "./pages/messages";
 import Historikk from "./pages/historikk";
 import AdminDashboard from "./components/admin-dashboard";
 import ManageRentals from "./pages/manage-rentals";
+import Groups from "./pages/groups";
 
 const App: React.FC<{}> = () => {
     const location = useLocation();
@@ -103,7 +104,16 @@ const App: React.FC<{}> = () => {
                     </Layout>
                 }
             />
+           
             <Route
+                path="/grupper"
+                element={
+                    <Layout>
+                        <Groups />
+                    </Layout>
+                }
+            />
+             <Route
                 path="/admin"
                 element={
                     <Layout>
