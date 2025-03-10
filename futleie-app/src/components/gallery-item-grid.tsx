@@ -12,7 +12,7 @@ const GalleryItemGrid: React.FC = () => {
             let query = supabaseClient.from("Items").select(`
                 *,
                 Item_images(image_url),
-                Users:owner_id(username)
+                Users:owner_id(username, tot_rating, rating_counter)
             `);
 
             const { data, error } = await query;
@@ -29,6 +29,8 @@ const GalleryItemGrid: React.FC = () => {
                     (img: { image_url: any }) => img.image_url
                 ),
                 owner: item.Users?.username || "",
+                ownerTotRating: item.Users?.tot_rating || 0,
+                ownerRatingCounter: item.Users?.rating_counter || 0,
             }));
 
             setItems(formattedResults);
