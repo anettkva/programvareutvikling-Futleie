@@ -4,16 +4,16 @@ import { Item } from "@/Types/Item";
 export type RentalHistoryItem = {
     id: number;
     title: string;
-    address: string; // This will be constructed from item location
-    username: string; // This will be constructed from item
-    period: string; // This will be constructed from start_date and end_date
+    address: string;
+    username: string;
+    period: string;
     rating: number | null;
     isRated: boolean;
-    isPast: boolean; // Whether the rental period has ended
+    isPast: boolean;
     item_id: number;
     renter_id: number;
     original_item?: Item;
-    end_date: string; // Raw end date for calculations
+    end_date: string;
 };
 
 /**
@@ -27,10 +27,9 @@ export const fetchRentalHistory = async (
     pastOnly: boolean = false
 ) => {
     try {
-        // Get current date in ISO format
         const currentDate = new Date().toISOString().split("T")[0];
 
-        // Query for items rented BY the user (where user is the renter)
+        // Henter items leid av brukeren
         let rentedByUserQuery = supabaseClient
             .from("Rentals")
             .select(
@@ -41,7 +40,7 @@ export const fetchRentalHistory = async (
             )
             .eq("renter_id", userId);
 
-        // Query for items rented OUT by the user (where user is the owner of the item)
+        // Henter items leid ut av brukeren
         let rentedOutByUserQuery = supabaseClient
             .from("Rentals")
             .select(
@@ -53,7 +52,7 @@ export const fetchRentalHistory = async (
             )
             .eq("Items.owner_id", userId);
 
-        // Add filter for past rentals if needed
+        // Sjekker om fortidige leieforhold skal inkluderes
         if (pastOnly) {
             rentedByUserQuery = rentedByUserQuery.lt("end_date", currentDate);
             rentedOutByUserQuery = rentedOutByUserQuery.lt(
@@ -62,13 +61,12 @@ export const fetchRentalHistory = async (
             );
         }
 
-        // Execute both queries in parallel
+        // Henter begge samtidig
         const [rentedByUserResult, rentedOutByUserResult] = await Promise.all([
             rentedByUserQuery,
             rentedOutByUserQuery,
         ]);
 
-        // Handle errors
         if (rentedByUserResult.error) {
             console.error(
                 "Error fetching rentals by user:",
@@ -85,7 +83,7 @@ export const fetchRentalHistory = async (
             throw new Error(rentedOutByUserResult.error.message);
         }
 
-        // Format the data into the expected format
+        // Formaterer dataen på riktig vis
         const leidItems = formatRentedItems(rentedByUserResult.data || []);
         const leidUtItems = formatRentedOutItems(
             rentedOutByUserResult.data || []
@@ -99,7 +97,7 @@ export const fetchRentalHistory = async (
 };
 
 /**
- * Format items rented by the user
+ * Formater items leid av brukeren
  */
 const formatRentedItems = (rentals: any[]): RentalHistoryItem[] => {
     const currentDate = new Date().toISOString().split("T")[0];
@@ -127,7 +125,7 @@ const formatRentedItems = (rentals: any[]): RentalHistoryItem[] => {
 };
 
 /**
- * Format items rented out by the user
+ * Formater items leid ut av brukeren
  */
 const formatRentedOutItems = (rentals: any[]): RentalHistoryItem[] => {
     const currentDate = new Date().toISOString().split("T")[0];
@@ -155,7 +153,7 @@ const formatRentedOutItems = (rentals: any[]): RentalHistoryItem[] => {
 };
 
 /**
- * Format date period string
+ * Formater datoer til en pen streng
  */
 const formatDatePeriod = (startDate: string, endDate: string): string => {
     const formatDate = (dateString: string) => {
@@ -171,7 +169,7 @@ const formatDatePeriod = (startDate: string, endDate: string): string => {
 };
 
 /**
- * Update rating for a rental
+ * Oppdater vurdering på et leieforhold
  */
 export const updateRentalRating = async (rentalId: number, rating: number) => {
     try {

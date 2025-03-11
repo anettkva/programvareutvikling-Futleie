@@ -3,20 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { Star } from "lucide-react";
-import {
     fetchRentalHistory,
-    updateRentalRating,
     RentalHistoryItem,
 } from "@/services/rental-history";
 import Cookies from "js-cookie";
-import supabaseClient from "@/supabaseClient";
 import HistoryItem from "@/components/history-item";
 
 // We're using the RentalHistoryItem type from rental-history.ts

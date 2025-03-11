@@ -12,7 +12,6 @@ import {
 import { Button } from "./ui/button";
 import { Star } from "lucide-react";
 import { useState } from "react";
-import { set } from "date-fns";
 import supabaseClient from "@/supabaseClient";
 
 const HistoryItem = ({
@@ -25,39 +24,13 @@ const HistoryItem = ({
     const [rating, setRating] = useState<number | null>(item.rating);
     const [isRated, setIsRated] = useState<boolean>(item.isRated);
     // Function to handle temporary rating selection (before submission)
-    const handleRatingSelection = (
-        itemId: number,
-        type: "leid" | "leidUt",
-        newRating: number
-    ) => {
-        /* if (type === "leid") {
-            setLeidItems((prevItems) =>
-                prevItems.map((item) =>
-                    item.id === itemId && !item.isRated
-                        ? { ...item, rating: newRating }
-                        : item
-                )
-            );
-        } else {
-            setLeidUtItems((prevItems) =>
-                prevItems.map((item) =>
-                    item.id === itemId && !item.isRated
-                        ? { ...item, rating: newRating }
-                        : item
-                )
-            );
-        } */
+    const handleRatingSelection = (newRating: number) => {
         setRating(newRating);
     };
 
     // Function to submit the final rating
     const handleRatingSubmit = async () => {
         try {
-            // Find the item to get the rental ID and rating
-            /* const items = type === "leid" ? leidItems : leidUtItems;
-            const item = items.find((item) => item.id === itemId); */
-            console.log("prøver å rate");
-
             if (!item || rating === null) return;
             if (isRated) return;
 
@@ -67,7 +40,7 @@ const HistoryItem = ({
 
             let ratedUserId: number;
             if (type === "leid") {
-                // When we've rented an item, we're rating the owner
+                // Når vi har leid rater vi eieren
                 const { data, error } = await supabaseClient
                     .from("Items")
                     .select()
@@ -80,12 +53,11 @@ const HistoryItem = ({
                 ratedUserId = data.owner_id;
                 console.log(`Rating owner (ID: ${ratedUserId}) of item`);
             } else {
-                // When we've rented out an item, we're rating the renter
+                // Når vi er utleier, rater vi leietaker
                 ratedUserId = item.renter_id;
                 console.log(`Rating renter (ID: ${ratedUserId}) of item`);
             }
 
-            // Update the rating in the database
             await updateRentalRating(item.id, rating);
 
             const { data, error } = await supabaseClient
@@ -109,21 +81,7 @@ const HistoryItem = ({
                 })
                 .eq("id", ratedUserId);
 
-            // Immediately update the local state to show "Vurdering sendt"
-            /* if (type === "leid") {
-                setLeidItems((prevItems) =>
-                    prevItems.map((i) =>
-                        i.id === itemId ? { ...i, isRated: true } : i
-                    )
-                );
-            } else {
-                setLeidUtItems((prevItems) =>
-                    prevItems.map((i) =>
-                        i.id === itemId ? { ...i, isRated: true } : i
-                    )
-                );
-            } */
-
+            // Oppdater status slik at historikk-siden har tilgang til den nye vurderingen
             setIsRated(true);
             item.isRated = true;
             item.rating = rating;
@@ -133,7 +91,6 @@ const HistoryItem = ({
             );
         } catch (err) {
             console.error("Error submitting rating:", err);
-            // You might want to show an error message to the user here
         }
     };
 
@@ -176,7 +133,6 @@ const HistoryItem = ({
     );
 };
 
-// Interactive star rating component with submit button
 const StarRating = ({
     rating,
     itemId,
@@ -200,7 +156,6 @@ const StarRating = ({
 }) => {
     const [hoverRating, setHoverRating] = useState<number | null>(null);
 
-    // If it's a future rental, show message and disable rating
     if (!isPast) {
         return (
             <div>
