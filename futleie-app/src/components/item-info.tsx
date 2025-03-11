@@ -20,7 +20,7 @@ import {
     CarouselNext,
 } from "./ui/carousel";
 import Cookies from "js-cookie";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Star } from "lucide-react";
 
 const ItemInfo: React.FC = () => {
     const navigate = useNavigate();
@@ -34,6 +34,7 @@ const ItemInfo: React.FC = () => {
     const [bookedDates, setBookedDates] = useState<Date[]>([]);
     const [currentUserId, setCurrentUserId] = useState<number | null>(null);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
+    const [owner, setOwner] = useState<{ username: string } | null>(null);
 
     useEffect(() => {
         // Hent bruker fra cookie
@@ -100,6 +101,26 @@ const ItemInfo: React.FC = () => {
         };
         fetchImages();
     }, [itemId, item]);
+
+    useEffect(() => {
+        const fetchOwner = async () => {
+            if (item) {
+                const { data, error } = await supabaseClient
+                    .from("Users")
+                    .select("username")
+                    .eq("id", item.owner_id)
+                    .single();
+
+                if (error) {
+                    console.error("Error fetching owner:", error);
+                } else {
+                    setOwner(data);
+                }
+            }
+        };
+
+        fetchOwner();
+    }, [item]);
 
     const fetchBookedDates = async () => {
         if (itemId) {
@@ -277,6 +298,11 @@ const ItemInfo: React.FC = () => {
                     <h1 className="text-3xl font-bold break-words max-w-full whitespace-pre-wrap">
                         {item.title}
                     </h1>
+                    {owner && (
+                    <p className="text-lg text-gray-700">
+                            {owner.username} (<Star className="inline-block w-4 h-4 text-primary fill-primary"/>)
+                    </p>
+                    )}
                     <p className="text-xl break-words max-w-full whitespace-pre-wrap">
                         {item.description}
                     </p>
