@@ -14,6 +14,8 @@ import Historikk from "./pages/historikk";
 import AdminDashboard from "./components/admin-dashboard";
 import ManageRentals from "./pages/manage-rentals";
 import Groups from "./pages/groups";
+import CreateGroup from "./pages/create-group";
+import GroupAds from "./pages/group-ads";
 
 const App: React.FC<{}> = () => {
     const location = useLocation();
@@ -121,6 +123,8 @@ const App: React.FC<{}> = () => {
                     </Layout>
                 }
             />
+            <Route path="/create-group" element={ <Layout><CreateGroup /></Layout>} />
+            <Route path="/group/:groupId" element={ <Layout><GroupAds /></Layout>} />
         </Routes>
     );
 };

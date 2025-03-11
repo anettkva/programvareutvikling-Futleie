@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import ItemCard from "@/components/item-card";
 import { Item } from "@/Types/Item";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { putImagesInItems, putOwnersInItems } from "./itemfilling";
 
 type ItemGridProps = {
     inputItems: Item[];
