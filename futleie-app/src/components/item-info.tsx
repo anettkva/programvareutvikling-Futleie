@@ -35,6 +35,7 @@ const ItemInfo: React.FC = () => {
     const [currentUserId, setCurrentUserId] = useState<number | null>(null);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [owner, setOwner] = useState<{ username: string } | null>(null);
+    const [rating, setRating] = useState<number | null>(null);
 
     useEffect(() => {
         // Hent bruker fra cookie
@@ -107,7 +108,7 @@ const ItemInfo: React.FC = () => {
             if (item) {
                 const { data, error } = await supabaseClient
                     .from("Users")
-                    .select("username")
+                    .select("username, tot_rating, rating_counter")
                     .eq("id", item.owner_id)
                     .single();
 
@@ -115,6 +116,9 @@ const ItemInfo: React.FC = () => {
                     console.error("Error fetching owner:", error);
                 } else {
                     setOwner(data);
+                    if (data.tot_rating && data.rating_counter) {
+                        setRating(data.tot_rating / data.rating_counter);
+                    }
                 }
             }
         };
@@ -138,9 +142,9 @@ const ItemInfo: React.FC = () => {
             const dates = data.flatMap(({ start_date, end_date }) => {
                 // Fikse tidssoneproblemet ved å sette klokkeslettet til 12:00
                 // Dette sikrer at datoen ikke forskyves på grunn av tidssonekonvertering
-                const startDate = new Date(start_date + 'T12:00:00');
-                const endDate = new Date(end_date + 'T12:00:00');
-                
+                const startDate = new Date(start_date + "T12:00:00");
+                const endDate = new Date(end_date + "T12:00:00");
+
                 const datesArray = [];
                 for (
                     let date = new Date(startDate);
@@ -204,11 +208,11 @@ const ItemInfo: React.FC = () => {
         const formatDateToISO = (date: Date | undefined) => {
             if (!date) return undefined;
             const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0'); // Måneder er 0-indeksert
-            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, "0"); // Måneder er 0-indeksert
+            const day = String(date.getDate()).padStart(2, "0");
             return `${year}-${month}-${day}`;
         };
-        
+
         const startDateISO = formatDateToISO(dateRange.from);
         const endDateISO = formatDateToISO(dateRange.to);
 
@@ -299,9 +303,18 @@ const ItemInfo: React.FC = () => {
                         {item.title}
                     </h1>
                     {owner && (
-                    <p className="text-lg text-gray-700">
-                            {owner.username} (<Star className="inline-block w-4 h-4 text-primary fill-primary"/>)
-                    </p>
+                        <p className="text-lg text-gray-700">
+                            {owner.username}{" "}
+                            {rating ? (
+                                <>
+                                    ({rating.toFixed(1)}{" "}
+                                    <Star className="inline-block w-4 h-4 text-primary fill-primary" />
+                                    )
+                                </>
+                            ) : (
+                                ""
+                            )}
+                        </p>
                     )}
                     <p className="text-xl break-words max-w-full whitespace-pre-wrap">
                         {item.description}
