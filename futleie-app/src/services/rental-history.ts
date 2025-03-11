@@ -5,6 +5,7 @@ export type RentalHistoryItem = {
     id: number;
     title: string;
     address: string; // This will be constructed from item location
+    username: string; // This will be constructed from item
     period: string; // This will be constructed from start_date and end_date
     rating: number | null;
     isRated: boolean;
@@ -35,7 +36,7 @@ export const fetchRentalHistory = async (
             .select(
                 `
         *,
-        Items(*)
+        Items(*, Users(*))
       `
             )
             .eq("renter_id", userId);
@@ -46,7 +47,8 @@ export const fetchRentalHistory = async (
             .select(
                 `
         *,
-        Items!inner(*)
+        Items!inner(*),
+        Users(*)
       `
             )
             .eq("Items.owner_id", userId);
@@ -65,19 +67,6 @@ export const fetchRentalHistory = async (
             rentedByUserQuery,
             rentedOutByUserQuery,
         ]);
-
-        // Log the raw data from the database for debugging
-        console.log("=== RENTAL HISTORY DATABASE ACCESS ====");
-        console.log(`User ID: ${userId}, Past Only: ${pastOnly}`);
-        console.log(
-            "Items rented BY user (raw data):",
-            rentedByUserResult.data
-        );
-        console.log(
-            "Items rented OUT by user (raw data):",
-            rentedOutByUserResult.data
-        );
-        console.log("=======================================");
 
         // Handle errors
         if (rentedByUserResult.error) {
@@ -102,12 +91,6 @@ export const fetchRentalHistory = async (
             rentedOutByUserResult.data || []
         );
 
-        // Log the formatted data for debugging
-        console.log("=== RENTAL HISTORY FORMATTED DATA ====");
-        console.log("Items rented BY user (formatted):", leidItems);
-        console.log("Items rented OUT by user (formatted):", leidUtItems);
-        console.log("=======================================");
-
         return { leidItems, leidUtItems };
     } catch (error) {
         console.error("Error in fetchRentalHistory:", error);
@@ -130,6 +113,7 @@ const formatRentedItems = (rentals: any[]): RentalHistoryItem[] => {
             id: rental.id,
             title: item.title,
             address: item.location || "Ukjent adresse",
+            username: item.Users.username,
             period: formatDatePeriod(rental.start_date, rental.end_date),
             rating: rental.rating,
             isRated: rental.rating !== null,
@@ -157,6 +141,7 @@ const formatRentedOutItems = (rentals: any[]): RentalHistoryItem[] => {
             id: rental.id,
             title: item.title,
             address: item.location || "Ukjent adresse",
+            username: rental.Users.username,
             period: formatDatePeriod(rental.start_date, rental.end_date),
             rating: rental.rating,
             isRated: rental.rating !== null,
