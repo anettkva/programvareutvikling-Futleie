@@ -319,12 +319,13 @@ const ItemInfo: React.FC = () => {
                     <p className="text-xl break-words max-w-full whitespace-pre-wrap">
                         {item.description}
                     </p>
-                    <p className="text-lg text-gray-700">
-                        <strong>Kategori:</strong> {item.category}
-                    </p>
-                    <p className="text-lg text-gray-700">
-                        <strong>Lokasjon:</strong> {item.location}
-                    </p>
+
+                    {item.category ? (
+                        <p className="text-lg text-gray-700">
+                            <strong>Kategori:</strong> {item.category}
+                        </p>
+                    ) : null}
+
                     {isOwner ? (
                         // Hvis eier
                         <div className="flex gap-4">
