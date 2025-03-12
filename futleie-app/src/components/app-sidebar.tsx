@@ -6,6 +6,7 @@ import {
     History,
     ReceiptText,
     UserRoundCog,
+    Users,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Cookie from "js-cookie";
@@ -14,7 +15,6 @@ import {
     SidebarContent,
     SidebarGroup,
     SidebarGroupContent,
-    SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
@@ -32,7 +32,9 @@ const menuItems = [
     { title: "Meldinger", url: "/messages", icon: Inbox },
     { title: "Historikk", url: "/historikk", icon: History },
     { title: "Bookinger", url: "/manage-rentals", icon: ReceiptText },
+    { title: "Grupper", url: "/grupper", icon: Users },
     { title: "Profil", url: "/profile", icon: User },
+
 ];
 
 export function AppSidebar() {
