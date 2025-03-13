@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import supabaseClient from "@/supabaseClient";
 import Cookies from "js-cookie";
-import { log } from "node:console";
 
 // Define the Group type
 type Group = {
