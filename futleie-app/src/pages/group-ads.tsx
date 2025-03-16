@@ -140,7 +140,8 @@ export default function GroupAds() {
   if (error) {
     return (
       <div className="container mx-auto py-6">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <AddItemToGroupButton />
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 mt-4">
           <p>{error}</p>
         </div>
         <Button onClick={handleBackToGroups}>Tilbake til grupper</Button>
@@ -165,11 +166,13 @@ export default function GroupAds() {
       </div>
       <AddItemToGroupButton />
       {items.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-gray-500">
-            Ingen annonser å vise ennå for denne gruppen.
-          </p>
-        </div>
+        <>
+          <div className="bg-white rounded-lg shadow p-6">
+            <p className="text-gray-500">
+              Ingen annonser å vise ennå for denne gruppen.
+            </p>
+          </div>
+        </>
       ) : (
         <ItemGrid inputItems={items} />
       )}
