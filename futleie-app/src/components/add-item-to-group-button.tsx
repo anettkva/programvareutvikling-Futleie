@@ -103,7 +103,7 @@ const AddItemToGroupButton: React.FC = () => {
         return;
       }
 
-      setSuccess("Items successfully added to group");
+      setSuccess("Annonsene ble lagt til i gruppen");
     } catch (err) {
       setError("An unexpected error occurred");
     } finally {

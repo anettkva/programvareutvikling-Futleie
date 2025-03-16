@@ -17,63 +17,82 @@ const SearchableItemGrid: React.FC = () => {
 
   useEffect(() => {
     const fetchSearchResults = async () => {
-      // Basic query to fetch all items or items matching search term
-      let query = supabaseClient.from("Items").select(`
+      try {
+        // Fetch item memberships
+        const { data: memberships, error: membershipsError } =
+          await supabaseClient.from("Item-membership").select("item_id");
+
+        if (membershipsError) {
+          setError(`Failed to fetch memberships: ${membershipsError.message}`);
+          return;
+        }
+
+        const membershipItemIds = memberships.map(
+          (membership) => membership.item_id
+        );
+
+        // Basic query to fetch all items or items matching search term
+        let query = supabaseClient.from("Items").select(`
                     *,
                     Item_images(image_url),
                     Users:owner_id(username, tot_rating, rating_counter)
                 `);
 
-      // Add search filter if searchTerm exists
-      if (searchTerm.trim() !== "") {
-        query = query.or(
-          `title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`
-        );
-      }
-
-      // Add category filter if a category is selected
-      if (selectedCategory) {
-        query = query.eq("category", selectedCategory);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error("Error fetching search results:", error);
-        return;
-      }
-
-      // Transform the data to match your Item type structure
-      let formattedResults = data.map((item) => ({
-        ...item,
-        images: item.Item_images.map(
-          (img: { image_url: any }) => img.image_url
-        ),
-        owner: item.Users?.username || "",
-        ownerTotRating: item.Users?.tot_rating || 0,
-        ownerRatingCounter: item.Users?.rating_counter || 0,
-      }));
-
-      // Filter by location if userLocation is provided
-      if (userLocation && radius > 0 && radius < 100) {
-        formattedResults = formattedResults.filter((item) => {
-          // Skip items without location data
-          if (!item.lat || !item.lng) return false;
-
-          // Calculate distance between user and item
-          const distance = calculateDistance(
-            userLocation.lat,
-            userLocation.lng,
-            item.lat,
-            item.lng
+        // Add search filter if searchTerm exists
+        if (searchTerm.trim() !== "") {
+          query = query.or(
+            `title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`
           );
+        }
 
-          // Include the item if it's within the radius
-          return distance <= radius;
-        });
+        // Add category filter if a category is selected
+        if (selectedCategory) {
+          query = query.eq("category", selectedCategory);
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+          console.error("Error fetching search results:", error);
+          return;
+        }
+
+        // Transform the data to match your Item type structure
+        let formattedResults = data
+          .filter((item) => !membershipItemIds.includes(item.id))
+          .map((item) => ({
+            ...item,
+            images: item.Item_images.map(
+              (img: { image_url: any }) => img.image_url
+            ),
+            owner: item.Users?.username || "",
+            ownerTotRating: item.Users?.tot_rating || 0,
+            ownerRatingCounter: item.Users?.rating_counter || 0,
+          }));
+
+        // Filter by location if userLocation is provided
+        if (userLocation && radius > 0 && radius < 100) {
+          formattedResults = formattedResults.filter((item) => {
+            // Skip items without location data
+            if (!item.lat || !item.lng) return false;
+
+            // Calculate distance between user and item
+            const distance = calculateDistance(
+              userLocation.lat,
+              userLocation.lng,
+              item.lat,
+              item.lng
+            );
+
+            // Include the item if it's within the radius
+            return distance <= radius;
+          });
+        }
+
+        setSearchResults(formattedResults);
+      } catch (err) {
+        console.error("An unexpected error occurred", err);
       }
-
-      setSearchResults(formattedResults);
     };
 
     fetchSearchResults();
