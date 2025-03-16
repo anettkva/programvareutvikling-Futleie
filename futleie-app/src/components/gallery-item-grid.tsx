@@ -4,46 +4,82 @@ import supabaseClient from "@/supabaseClient";
 import { Item } from "@/Types/Item";
 
 const GalleryItemGrid: React.FC = () => {
-    const [items, setItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchAllItems = async () => {
-            // Basic query to fetch all items with related data
-            let query = supabaseClient.from("Items").select(`
-                *,
-                Item_images(image_url),
-                Users:owner_id(username, tot_rating, rating_counter)
-            `);
+  useEffect(() => {
+    const fetchAllItems = async () => {
+      try {
+        setLoading(true);
 
-            const { data, error } = await query;
+        // Fetch item memberships
+        const { data: memberships, error: membershipsError } =
+          await supabaseClient.from("Item-membership").select("item_id");
 
-            if (error) {
-                console.error("Error fetching items:", error);
-                return;
-            }
+        if (membershipsError) {
+          setError(`Failed to fetch memberships: ${membershipsError.message}`);
+          setLoading(false);
+          return;
+        }
 
-            // Transform the data to match the Item type structure
-            const formattedResults = data.map((item) => ({
-                ...item,
-                images: item.Item_images.map(
-                    (img: { image_url: any }) => img.image_url
-                ),
-                owner: item.Users?.username || "",
-                ownerTotRating: item.Users?.tot_rating || 0,
-                ownerRatingCounter: item.Users?.rating_counter || 0,
-            }));
+        const membershipItemIds = memberships.map(
+          (membership) => membership.item_id
+        );
 
-            setItems(formattedResults);
-        };
+        // Fetch all items with related data
+        let query = supabaseClient.from("Items").select(`
+                    *,
+                    Item_images(image_url),
+                    Users:owner_id(username, tot_rating, rating_counter)
+                `);
 
-        fetchAllItems();
-    }, []);
+        const { data, error } = await query;
 
-    return (
-        <div>
-            <ItemGrid inputItems={items} />
-        </div>
-    );
+        if (error) {
+          console.error("Error fetching items:", error);
+          setError(`Failed to fetch items: ${error.message}`);
+          setLoading(false);
+          return;
+        }
+
+        // Transform the data to match the Item type structure
+        const formattedResults = data
+          .filter((item) => !membershipItemIds.includes(item.id))
+          .map((item) => ({
+            ...item,
+            images: item.Item_images.map(
+              (img: { image_url: any }) => img.image_url
+            ),
+            owner: item.Users?.username || "",
+            ownerTotRating: item.Users?.tot_rating || 0,
+            ownerRatingCounter: item.Users?.rating_counter || 0,
+          }));
+
+        setItems(formattedResults);
+      } catch (err) {
+        setError("An unexpected error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllItems();
+  }, []);
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return <p>{error}</p>;
+  }
+
+  return (
+    <div>
+      <ItemGrid inputItems={items} />
+    </div>
+  );
 };
 
 export default GalleryItemGrid;

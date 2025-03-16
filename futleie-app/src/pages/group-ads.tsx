@@ -4,6 +4,7 @@ import supabaseClient from "@/supabaseClient";
 import { Button } from "@/components/ui/button";
 import ItemGrid from "@/components/item-grid";
 import { Item } from "@/Types/Item";
+import AddItemToGroupButton from "@/components/add-item-to-group-button";
 
 // Define types
 type Group = {
@@ -82,7 +83,7 @@ export default function GroupAds() {
             `
             *,
             Item_images(image_url),
-            Users:owner_id(username)
+            Users:owner_id(username, tot_rating, rating_counter)
           `
           )
           .in("id", itemIds);
@@ -98,10 +99,12 @@ export default function GroupAds() {
         // Transform the data to match the Item type structure
         const formattedResults = itemsData.map((item) => ({
           ...item,
-          images: item.item_images
-            ? item.item_images.map((img: { url: string }) => img.url)
-            : [],
-          owner: item.owner?.username || "",
+          images: item.Item_images.map(
+            (img: { image_url: string }) => img.image_url
+          ),
+          owner: item.Users?.username || "",
+          ownerTotRating: item.Users?.tot_rating || 0,
+          ownerRatingCounter: item.Users?.rating_counter || 0,
         }));
         console.log(formattedResults);
         setItems(formattedResults || []);
@@ -160,7 +163,7 @@ export default function GroupAds() {
         </p>
         <p className="text-sm mt-1">{group?.description}</p>
       </div>
-
+      <AddItemToGroupButton />
       {items.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-6">
           <p className="text-gray-500">
