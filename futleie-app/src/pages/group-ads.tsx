@@ -15,8 +15,6 @@ type Group = {
   created_at: string;
 };
 
-// We'll use the existing Item type from the app
-
 export default function GroupAds() {
   const { groupId } = useParams();
   const navigate = useNavigate();
@@ -53,29 +51,63 @@ export default function GroupAds() {
 
         setGroup(groupData);
 
-        // For now, we'll fetch all ads since we don't have a group-ads relationship yet
-        // In a real implementation, you would fetch only ads related to this group
-        const { data, error: adsError } = await supabaseClient
+        // Fetch item memberships related to this group
+        const { data: memberships, error: membershipsError } =
+          await supabaseClient
+            .from("Item-membership")
+            .select("item_id")
+            .eq("group_id", groupId);
+
+        if (membershipsError) {
+          console.error("Error fetching item memberships:", membershipsError);
+          setError(
+            `Failed to fetch item memberships: ${membershipsError.message}`
+          );
+          setLoading(false);
+          return;
+        }
+
+        if (memberships.length === 0) {
+          setError("Ingen annonser tilknyttet denne gruppen.");
+          setLoading(false);
+          return;
+        }
+
+        // Fetch items based on item_ids from memberships
+        const itemIds = memberships.map((membership) => membership.item_id);
+        console.log(itemIds);
+        const { data: itemsData, error: itemsError } = await supabaseClient
           .from("Items")
-          .select(`
+          .select(
+            `
             *,
             Item_images(image_url),
             Users:owner_id(username)
-          `)
+          `
+          )
+          .in("id", itemIds);
+        console.log(itemsData);
 
-        if (adsError) {
-          console.error("Error fetching ads:", adsError);
-          setError(`Failed to fetch ads: ${adsError.message}`);
-        } else {
-          // Transform the data to match the Item type structure
-          const formattedResults = data.map((item) => ({
-            ...item,
-            images: item.Item_images.map(
-              (img: { image_url: string }) => img.image_url
-            ),
-            owner: item.Users?.username || "",
-          }));
-          setItems(formattedResults || []);
+        if (itemsError) {
+          console.error("Error fetching items:", itemsError);
+          setError(`Failed to fetch items: ${itemsError.message}`);
+          setLoading(false);
+          return;
+        }
+
+        // Transform the data to match the Item type structure
+        const formattedResults = itemsData.map((item) => ({
+          ...item,
+          images: item.item_images
+            ? item.item_images.map((img: { url: string }) => img.url)
+            : [],
+          owner: item.owner?.username || "",
+        }));
+        console.log(formattedResults);
+        setItems(formattedResults || []);
+
+        if (formattedResults.length === 0) {
+          setError("Ingen annonser tilknyttet denne gruppen.");
         }
       } catch (err) {
         console.error("Unexpected error:", err);
@@ -91,8 +123,6 @@ export default function GroupAds() {
   const handleBackToGroups = () => {
     navigate("/grupper");
   };
-
-
 
   if (loading) {
     return (
@@ -118,24 +148,24 @@ export default function GroupAds() {
   return (
     <div className="container mx-auto py-6">
       <div className="flex items-center mb-6">
-        <Button 
-          variant="outline" 
-          onClick={handleBackToGroups}
-          className="mr-4"
-        >
+        <Button variant="outline" onClick={handleBackToGroups} className="mr-4">
           ← Tilbake til grupper
         </Button>
         <h1 className="text-2xl font-bold">{group?.name} - Annonser</h1>
       </div>
 
       <div className="bg-[#FDEDE7] border border-[#F26416] text-[#F26416] px-4 py-3 rounded mb-6">
-        <p><strong>Gruppekode:</strong> {group?.code}</p>
+        <p>
+          <strong>Gruppekode:</strong> {group?.code}
+        </p>
         <p className="text-sm mt-1">{group?.description}</p>
       </div>
 
       {items.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-gray-500">Ingen annonser å vise ennå for denne gruppen.</p>
+          <p className="text-gray-500">
+            Ingen annonser å vise ennå for denne gruppen.
+          </p>
         </div>
       ) : (
         <ItemGrid inputItems={items} />
