@@ -23,11 +23,7 @@ const ItemGrid: React.FC<ItemGridProps> = ({ inputItems = [] }) => {
     return (
         <div>
             <div className="flex justify-end px-5 pt-5">
-                <Button
-                    onClick={handleCreateAd}
-                >
-                    Opprett annonse
-                </Button>
+                <Button onClick={handleCreateAd}>Opprett annonse</Button>
             </div>
             <div className="grid gap-6 m-5 grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
                 {items ? (
@@ -44,6 +40,8 @@ const ItemGrid: React.FC<ItemGridProps> = ({ inputItems = [] }) => {
                                         : ""
                                 }
                                 owner={item.owner ? item.owner : ""}
+                                ownerTotRating={item.ownerTotRating}
+                                ownerRatingCounter={item.ownerRatingCounter}
                                 className="col-span-1"
                             />
                         );

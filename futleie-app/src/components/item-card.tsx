@@ -10,6 +10,8 @@ interface ItemCardProps {
     imageUrl: string;
     owner: string;
     className?: string;
+    ownerTotRating?: number;
+    ownerRatingCounter?: number;
 }
 
 const ItemCard: React.FC<ItemCardProps> = ({
@@ -18,6 +20,8 @@ const ItemCard: React.FC<ItemCardProps> = ({
     title,
     imageUrl,
     owner,
+    ownerTotRating,
+    ownerRatingCounter,
 }) => {
     return (
         <Link
@@ -35,7 +39,9 @@ const ItemCard: React.FC<ItemCardProps> = ({
                                     className="w-full h-full object-cover"
                                     style={{ opacity: 0 }}
                                     onLoad={(e) => {
-                                        (e.target as HTMLImageElement).style.opacity = '1';
+                                        (
+                                            e.target as HTMLImageElement
+                                        ).style.opacity = "1";
                                     }}
                                 />
                                 <Skeleton className="absolute inset-0 -z-10" />
@@ -46,14 +52,21 @@ const ItemCard: React.FC<ItemCardProps> = ({
                     </div>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col justify-between">
-                        <div className="w-full overflow-hidden h-[3.75rem]">
-                            <CardTitle className="text-xl line-clamp-2 leading-[1.875rem]">{title}</CardTitle>
-                        </div>
-                        <section className="flex flex-row justify-between mt-auto">
-                            <p aria-label="owner" className="text-slate-400">
-                                {owner}
-                            </p>
-                        </section>
+                    <div className="w-full overflow-hidden h-[3.75rem]">
+                        <CardTitle className="text-xl line-clamp-2 leading-[1.875rem]">
+                            {title}
+                        </CardTitle>
+                    </div>
+                    <section className="flex flex-row justify-between mt-auto">
+                        <p aria-label="owner" className="text-slate-400">
+                            {owner}{" "}
+                            {ownerTotRating && ownerRatingCounter
+                                ? "(" +
+                                  ownerTotRating / ownerRatingCounter +
+                                  "✩)"
+                                : null}
+                        </p>
+                    </section>
                 </CardContent>
             </Card>
         </Link>

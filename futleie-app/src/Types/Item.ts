@@ -9,4 +9,6 @@ export type Item = {
     images: string[];
     category: string;
     location: string;
+    ownerTotRating: number;
+    ownerRatingCounter: number;
 };
