@@ -132,7 +132,10 @@ export default function Groups() {
                     console.error("Error fetching groups:", groupError);
                     setError(`Failed to fetch groups: ${groupError.message}`);
                 } else {
-                    setJoinedGroups(groupData || []);
+                    const filteredGroupData = groupData.filter((group) => {
+                        return group.owner_id !== userId;
+                    });
+                    setJoinedGroups(filteredGroupData || []);
                     setJoinedGroupsLoading(false);
                 }
             }
@@ -143,7 +146,7 @@ export default function Groups() {
     return (
         <div className="container mx-auto py-6">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">Grupper</h1>
+                <h1 className="text-2xl font-bold">Dine grupper</h1>
                 <Button onClick={handleCreateGroup}>Opprett gruppe</Button>
                 <div className="flex items-center space-x-2">
                     <input
@@ -210,7 +213,9 @@ export default function Groups() {
                 </div>
             )}
             <>
-                <h2 className="text-2xl font-bold mt-8 mb-4">Dine grupper</h2>
+                <h2 className="text-2xl font-bold mt-8 mb-4">
+                    Grupper du er medlem i
+                </h2>
                 {joinedGroupsLoading ? (
                     <div className="bg-white rounded-lg shadow p-6 flex justify-center">
                         <p>Laster grupper du deltar i...</p>
