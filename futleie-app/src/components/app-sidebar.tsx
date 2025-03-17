@@ -34,7 +34,6 @@ const menuItems = [
     { title: "Bookinger", url: "/manage-rentals", icon: ReceiptText },
     { title: "Grupper", url: "/grupper", icon: Users },
     { title: "Profil", url: "/profile", icon: User },
-
 ];
 
 export function AppSidebar() {
