@@ -209,52 +209,55 @@ export default function Groups() {
                     ))}
                 </div>
             )}
-            {joinedGroupsLoading ? (
-                <div className="bg-white rounded-lg shadow p-6 flex justify-center">
-                    <p>Laster grupper du deltar i...</p>
-                </div>
-            ) : joinedGroups.length === 0 ? (
-                <div className="bg-white rounded-lg shadow p-6">
-                    <p className="text-gray-500">
-                        Ingen grupper å vise ennå. Bli med i en gruppe for å
-                        komme i gang.
-                    </p>
-                </div>
-            ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {joinedGroups.map((group) => (
-                        <div
-                            key={group.id}
-                            className="bg-white rounded-lg shadow overflow-hidden"
-                        >
-                            <div className="p-5">
-                                <h2 className="text-xl font-semibold mb-2">
-                                    {group.name}
-                                </h2>
-                                <p className="text-gray-600 mb-4">
-                                    {group.description}
-                                </p>
-                                <div className="bg-[#FDEDE7] border border-[#F26416] text-[#F26416] px-3 py-2 rounded text-sm mb-4">
-                                    <p>
-                                        <strong>Kode:</strong> {group.code}
+            <>
+                <h2 className="text-2xl font-bold mt-8 mb-4">Medlemsgrupper</h2>
+                {joinedGroupsLoading ? (
+                    <div className="bg-white rounded-lg shadow p-6 flex justify-center">
+                        <p>Laster grupper du deltar i...</p>
+                    </div>
+                ) : joinedGroups.length === 0 ? (
+                    <div className="bg-white rounded-lg shadow p-6">
+                        <p className="text-gray-500">
+                            Ingen grupper å vise ennå. Bli med i en gruppe for å
+                            komme i gang.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {joinedGroups.map((group) => (
+                            <div
+                                key={group.id}
+                                className="bg-white rounded-lg shadow overflow-hidden"
+                            >
+                                <div className="p-5">
+                                    <h2 className="text-xl font-semibold mb-2">
+                                        {group.name}
+                                    </h2>
+                                    <p className="text-gray-600 mb-4">
+                                        {group.description}
                                     </p>
-                                </div>
-                                <div className="flex justify-between">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() =>
-                                            navigate(`/group/${group.id}`)
-                                        }
-                                    >
-                                        Se annonser
-                                    </Button>
+                                    <div className="bg-[#FDEDE7] border border-[#F26416] text-[#F26416] px-3 py-2 rounded text-sm mb-4">
+                                        <p>
+                                            <strong>Kode:</strong> {group.code}
+                                        </p>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                                navigate(`/group/${group.id}`)
+                                            }
+                                        >
+                                            Se annonser
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+                        ))}
+                    </div>
+                )}
+            </>
         </div>
     );
 }
