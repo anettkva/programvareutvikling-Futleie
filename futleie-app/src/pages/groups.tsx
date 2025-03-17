@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import supabaseClient from "@/supabaseClient";
 import Cookies from "js-cookie";
 
-// Define the Group type
+// Definer type for gruppe
 type Group = {
     id: number;
     name: string;
@@ -14,6 +14,15 @@ type Group = {
     created_at: string;
 };
 
+/**
+ * Groups komponenten viser alle grupper brukeren er medlem av og eier.
+ *
+ * @returns {JSX.Element} En side som viser grupper brukeren eier og er medlem av.
+ *
+ * @example
+ * // Brukt i routing i App.tsx
+ * <Route path="/grupper" element={<Groups />} />
+ */
 export default function Groups() {
     const navigate = useNavigate();
     const [groups, setGroups] = useState<Group[]>([]);
@@ -23,10 +32,16 @@ export default function Groups() {
     const [joinedGroupsLoading, setJoinedGroupsLoading] = useState(true);
     const [groupCode, setGroupCode] = useState("");
 
+    /**
+     * Navigerer til siden for å opprette en ny gruppe.
+     */
     const handleCreateGroup = () => {
         navigate("/create-group");
     };
 
+    /**
+     * Oppdaterer databasen slik at brukeren blir med i en gruppe.
+     */
     const handleJoinGroup = async () => {
         const { data, error } = await supabaseClient
             .from("Groups")
@@ -60,6 +75,7 @@ export default function Groups() {
         }
     };
 
+    // Henter gruppen(e) brukeren eier
     useEffect(() => {
         async function fetchGroups() {
             try {
@@ -98,6 +114,7 @@ export default function Groups() {
         fetchGroups();
     }, []);
 
+    // Henter gruppen(e) brukeren er medlem av
     useEffect(() => {
         async function getJoinedGroups() {
             const userCookie = Cookies.get("user");

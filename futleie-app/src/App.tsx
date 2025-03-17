@@ -56,7 +56,14 @@ const App: React.FC<{}> = () => {
                     </Layout>
                 }
             />
-            <Route path="/create-ad" element={<CreateAdPage />} />
+            <Route
+                path="/create-ad"
+                element={
+                    <Layout>
+                        <CreateAdPage />{" "}
+                    </Layout>
+                }
+            />
             <Route
                 path="/profile"
                 element={
@@ -106,7 +113,7 @@ const App: React.FC<{}> = () => {
                     </Layout>
                 }
             />
-           
+
             <Route
                 path="/grupper"
                 element={
@@ -115,7 +122,7 @@ const App: React.FC<{}> = () => {
                     </Layout>
                 }
             />
-             <Route
+            <Route
                 path="/admin"
                 element={
                     <Layout>
@@ -123,8 +130,22 @@ const App: React.FC<{}> = () => {
                     </Layout>
                 }
             />
-            <Route path="/create-group" element={ <Layout><CreateGroup /></Layout>} />
-            <Route path="/group/:groupId" element={ <Layout><GroupAds /></Layout>} />
+            <Route
+                path="/create-group"
+                element={
+                    <Layout>
+                        <CreateGroup />
+                    </Layout>
+                }
+            />
+            <Route
+                path="/group/:groupId"
+                element={
+                    <Layout>
+                        <GroupAds />
+                    </Layout>
+                }
+            />
         </Routes>
     );
 };

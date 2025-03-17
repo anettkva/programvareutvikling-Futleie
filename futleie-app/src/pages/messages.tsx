@@ -1,27 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus } from "lucide-react";
 import { Chat } from "@/components/chat";
-import { Button } from "@/components/ui/button";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import {
     fetchMessagedUsers,
     fetchMessagesBetweenUsers,
     formatMessages,
-    fetchUsers,
     sendMessage,
 } from "@/services/messages";
 import { ChatMessage } from "@/Types/chat-message";
 import Cookies from "js-cookie";
-import { User } from "@/Types/User";
 import { useLocation, useNavigate } from "react-router-dom";
 import supabaseClient from "@/supabaseClient";
 
@@ -32,24 +20,47 @@ interface UserChat {
     isActive?: boolean;
 }
 
+/**
+ *
+ * @component Messages
+ *
+ * @description En meldingsside-komponent som viser brukerens samtaler med andre brukere.
+ *
+ * Denne komponenten håndterer:
+ * - Visning av meldinger mellom innlogget bruker og andre brukere
+ * - Initiering av nye samtaler, spesielt fra annonser
+ * - Lasting av meldingsdata fra backend
+ *
+ *
+ * @state {UserChat[]} userChats - Liste over aktive samtaler med andre brukere
+ * @state {boolean} loading - Indikerer om data lastes inn
+ * @state {string | null} error - Feilmelding hvis noe gikk galt
+ * @state {number | null} currentUserId - ID-en til den innloggede brukeren
+ * @state {boolean} messageSent - Flag som indikerer om en melding har blitt sendt
+ *
+ * @example
+ * ```tsx
+ * <Messages />
+ * ```
+ *
+ * @returns {JSX.Element} En meldingsside som viser enten lastestatus, feilmelding,
+ *                         brukermeldinger, eller en melding om at ingen samtaler finnes
+ */
 const Messages: React.FC = () => {
     const [userChats, setUserChats] = useState<UserChat[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-    const [availableUsers, setAvailableUsers] = useState<User[]>([]);
-    const [newChatUser, setNewChatUser] = useState<User | null>(null);
-    const [dialogOpen, setDialogOpen] = useState(false);
     const [messageSent, setMessageSent] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
 
-    // Extract receiverId and itemId from URL if present
+    // Hent URL-parametere
     const searchParams = new URLSearchParams(location.search);
     const receiverId = searchParams.get("receiverId");
     const itemId = searchParams.get("itemId");
 
-    // Function to handle starting a conversation from an ad
+    // Funksjon for å starte en samtale fra en annonse
     const handleStartConversationFromAd = async (
         userId: number,
         receiverId: number,
@@ -60,7 +71,7 @@ const Messages: React.FC = () => {
                 `Starting conversation from ad: user ${userId} to receiver ${receiverId} about item ${itemId}`
             );
 
-            // Fetch item details
+            // Hent informasjon om Item
             const { data: itemData, error: itemError } = await supabaseClient
                 .from("Items")
                 .select("title")
@@ -72,7 +83,7 @@ const Messages: React.FC = () => {
                 return;
             }
 
-            // Get receiver user details
+            // Hent informasjon om mottaker
             const { data: receiverData, error: receiverError } =
                 await supabaseClient
                     .from("Users")
@@ -85,29 +96,29 @@ const Messages: React.FC = () => {
                 return;
             }
 
-            // Check if there are already messages between these users
+            // Sjekk om det allerede finnes meldinger mellom brukerne
             let existingMessages = await fetchMessagesBetweenUsers(
                 userId,
                 receiverId
             );
 
-            // Only send a message if there are no existing messages
+            // Bare send en initiell melding hvis det ikke allerede finnes meldinger
             if (existingMessages.length === 0) {
-                // Send initial message about the item
+                // Send en initiell melding
                 const initialMessage = `Hei! Jeg tar kontakt angående annonsen din "${itemData.title}".`;
                 await sendMessage(userId, receiverId, initialMessage);
 
-                // Fetch messages again to include the one we just sent
+                // Hent meldinger på nytt
                 existingMessages = await fetchMessagesBetweenUsers(
                     userId,
                     receiverId
                 );
             }
 
-            // Clear URL parameters
+            // Fjern url-parametere
             navigate("/messages", { replace: true });
 
-            // Format messages for display
+            // Formater meldingene for UI
             const formattedMessages = formatMessages(existingMessages, userId);
 
             const newChat: UserChat = {
@@ -120,23 +131,21 @@ const Messages: React.FC = () => {
             console.log("New chat to be added:", newChat);
             console.log("Messages in chat:", formattedMessages.length);
 
-            // Update user chats with the new chat as active
+            // Oppdater brukerchats
             setUserChats((prevChats) => {
                 console.log("Previous chats:", prevChats.length);
 
-                // Deactivate all existing chats
+                // Deaktiver alle andre samtaler
                 const updatedChats = prevChats.map((chat) => ({
                     ...chat,
                     isActive: false,
                 }));
 
-                // Check if chat with this user already exists
                 const existingChatIndex = updatedChats.findIndex(
                     (chat) => chat.id === receiverId
                 );
 
                 if (existingChatIndex >= 0) {
-                    // Update existing chat
                     updatedChats[existingChatIndex] = {
                         ...updatedChats[existingChatIndex],
                         messages: formattedMessages,
@@ -145,13 +154,12 @@ const Messages: React.FC = () => {
                     console.log("Updated existing chat");
                     return updatedChats;
                 } else {
-                    // Add new chat
                     console.log("Adding new chat");
                     return [newChat, ...updatedChats];
                 }
             });
 
-            // Reload the user data to ensure the chat appears
+            // Vent litt før vi laster meldinger på nytt
             setTimeout(() => {
                 loadUserData();
             }, 500);
@@ -161,8 +169,7 @@ const Messages: React.FC = () => {
         }
     };
 
-    // Fetch user data and messages on component mount
-    // Effect to handle starting a conversation from an ad
+    // Start en samtale fra en annonse
     useEffect(() => {
         const startConversation = async () => {
             if (receiverId && itemId && currentUserId && !messageSent) {
@@ -178,12 +185,12 @@ const Messages: React.FC = () => {
         startConversation();
     }, [receiverId, itemId, currentUserId, messageSent]);
 
-    // Function to load user data and messages
+    // Funksjon for lasting av meldingsdata
     const loadUserData = async () => {
         try {
             setLoading(true);
 
-            // Get current user from cookie
+            // Hent brukerdata fra cookies
             const userCookie = Cookies.get("user");
             if (!userCookie) {
                 setError("Du må være logget inn for å se meldinger");
@@ -195,13 +202,12 @@ const Messages: React.FC = () => {
             const userId = userData.id;
             setCurrentUserId(userId);
 
-            // Fetch all users this user has messaged with
+            // Hent alle brukere som har sendt eller mottatt meldinger fra brukeren
             const messagedUsers = await fetchMessagedUsers(userId);
 
-            // Format user chats for the UI
             const formattedUserChats: UserChat[] = [];
 
-            // For each user, fetch the messages between them
+            // Hent meldinger for hver bruker
             for (const user of messagedUsers) {
                 const messages = await fetchMessagesBetweenUsers(
                     userId,
@@ -213,15 +219,11 @@ const Messages: React.FC = () => {
                     id: user.id,
                     username: user.username,
                     messages: formattedMessages,
-                    isActive: formattedUserChats.length === 0, // Make the first chat active
+                    isActive: formattedUserChats.length === 0, // Sett første samtale som aktiv
                 });
             }
 
             setUserChats(formattedUserChats);
-
-            // Fetch available users for new chats
-            const users = await fetchUsers(userId);
-            setAvailableUsers(users);
 
             setError(null);
         } catch (err) {
@@ -232,48 +234,9 @@ const Messages: React.FC = () => {
         }
     };
 
-    // Load user data on component mount
     useEffect(() => {
         loadUserData();
     }, []);
-
-    const handleNewChat = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newChatUser || !currentUserId) return;
-
-        // Check if we already have a chat with this user
-        const existingChat = userChats.find(
-            (chat) => chat.id === newChatUser.id
-        );
-
-        if (existingChat) {
-            // Just make it active
-            setUserChats(
-                userChats.map((chat) => ({
-                    ...chat,
-                    isActive: chat.id === newChatUser.id,
-                }))
-            );
-        } else {
-            // Add a new chat to the UI
-            const newUserChat: UserChat = {
-                id: newChatUser.id,
-                username: newChatUser.username,
-                messages: [],
-                isActive: true,
-            };
-
-            // Set all other chats to inactive
-            setUserChats((prev) =>
-                prev
-                    .map((chat) => ({ ...chat, isActive: false }))
-                    .concat(newUserChat)
-            );
-        }
-
-        setNewChatUser(null);
-        setDialogOpen(false);
-    };
 
     if (loading) {
         return (
@@ -296,47 +259,6 @@ const Messages: React.FC = () => {
             <div className="flex flex-col h-full gap-6 px-5 py-6">
                 <div className="flex justify-between items-center">
                     <h1 className="text-3xl font-bold">Meldinger</h1>
-                    {/* Commented out the ability to create a new chat from the messages page
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button
-                className="flex gap-2 items-center">
-                <Plus className="h-4 w-4" />
-                <span>Ny chat</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Start ny chat</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleNewChat} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="recipient">Velg bruker å chatte med</Label>
-                  <select 
-                    id="recipient"
-                    className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#F26A21]" 
-                    value={newChatUser?.id || ""}
-                    onChange={(e) => {
-                      const selectedUser = availableUsers.find(user => user.id === parseInt(e.target.value));
-                      setNewChatUser(selectedUser || null);
-                    }}
-                  >
-                    <option value="">Velg bruker...</option>
-                    {availableUsers.map(user => (
-                      <option key={user.id} value={user.id}>{user.username}</option>
-                    ))}
-                  </select>
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full"
-                  disabled={!newChatUser}>
-                  Start chat
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-          */}
                 </div>
                 <div className="flex-1">
                     {userChats.length > 0 ? (

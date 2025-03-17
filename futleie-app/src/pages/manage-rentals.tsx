@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
 import supabaseClient from "@/supabaseClient";
 import { Rental } from "@/Types/Rental";
-import { Item } from "@/Types/Item";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+} from "@/components/ui/card";
 import Cookies from "js-cookie";
 
 interface RentalWithItem extends Rental {
@@ -13,13 +18,38 @@ interface RentalWithItem extends Rental {
     owner_name?: string;
 }
 
+/**
+ * @component ManageRentals
+ * @description
+ * En komponent for administrering av utleieforespørsler.
+ * Lar brukeren se både forespørsler de har sendt til andre og forespørsler de har mottatt for sine gjenstander.
+ * Brukeren kan filtrere forespørsler basert på status (ventende, godtatt, avslått) og
+ * administrere mottatte forespørsler ved å godta eller avslå dem.
+ *
+ * @state
+ * - rentals: Liste over brukerens egne forespørsler for å leie gjenstander fra andre
+ * - requests: Liste over forespørsler andre har sendt for å leie brukerens gjenstander
+ * - loading: Indikerer om data lastes inn
+ * - error: Lagrer eventuelle feilmeldinger
+ * - userId: Brukerens ID hentet fra cookies
+ * - activeTab: Hvilken fane som vises (pending, accepted, declined)
+ *
+ * @functions
+ * - checkIfDatesAvailable: Sjekker om datoene for en utleieforespørsel er tilgjengelige (ingen overlappende godkjente utleier)
+ * - handleUpdateStatus: Håndterer statusoppdatering for en utleieforespørsel (godta eller avslå)
+ * - getStatusColor: Returnerer fargen basert på utleiestatus for visuell tilbakemelding
+ *
+ * @returns En responsiv side som viser brukerens utleieforespørsler og mottatte forespørsler,
+ * med mulighet for å filtrere basert på status og administrere forespørsler.
+ */
 const ManageRentals: React.FC = () => {
     const [rentals, setRentals] = useState<RentalWithItem[]>([]);
     const [requests, setRequests] = useState<RentalWithItem[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [userId, setUserId] = useState<number | null>(null);
-    const [activeTab, setActiveTab] = useState<'pending' | 'accepted' | 'declined'>('pending');
+    const [activeTab, setActiveTab] = useState<
+        "pending" | "accepted" | "declined"
+    >("pending");
 
     useEffect(() => {
         const fetchRentalsAndRequests = async () => {
@@ -27,74 +57,98 @@ const ManageRentals: React.FC = () => {
                 setLoading(true);
                 const userCookie = Cookies.get("user");
                 if (!userCookie || userCookie.length === 0) {
-                    setError("Du må være logget inn for å se utleieforespørsler");
+                    setError(
+                        "Du må være logget inn for å se utleieforespørsler"
+                    );
                     setLoading(false);
                     return;
                 }
 
                 const userData = JSON.parse(userCookie);
                 const userId = userData.id;
-                setUserId(userId);
 
-                // Fetch rentals where user is the renter, including item details
-                const { data: rentalData, error: rentalError } = await supabaseClient
-                    .from("Rentals")
-                    .select("*, Items(*)")
-                    .eq("renter_id", userId);
-                
-                // Get owner IDs from items
-                const ownerIds = rentalData?.map(rental => rental.Items?.owner_id).filter(Boolean) || [];
-                
-                // Fetch owner information if there are any owner IDs
+                // Hent alle utleieforespørsler brukeren har sendt
+                const { data: rentalData, error: rentalError } =
+                    await supabaseClient
+                        .from("Rentals")
+                        .select("*, Items(*)")
+                        .eq("renter_id", userId);
+
+                // Hent alle eier-ID-er for utleieforespørsler
+                const ownerIds =
+                    rentalData
+                        ?.map((rental) => rental.Items?.owner_id)
+                        .filter(Boolean) || [];
+
+                // Hent eierinformasjon for alle eier-ID-er
                 let ownerData: Record<number, string> = {};
                 if (ownerIds.length > 0) {
                     const { data: owners } = await supabaseClient
                         .from("Users")
                         .select("id, username")
                         .in("id", ownerIds);
-                    
-                    // Create a map of owner ID to username
+
+                    // Map eier-ID-er til eierens brukernavn
                     if (owners) {
-                        ownerData = owners.reduce((acc: Record<number, string>, owner) => {
-                            acc[owner.id] = owner.username;
-                            return acc;
-                        }, {});
+                        ownerData = owners.reduce(
+                            (acc: Record<number, string>, owner) => {
+                                acc[owner.id] = owner.username;
+                                return acc;
+                            },
+                            {}
+                        );
                     }
                 }
 
-                // Fetch all rentals for items owned by the user, including item details and renter information
-                const { data: requestData, error: requestError } = await supabaseClient
-                    .from("Rentals")
-                    .select("*, Items(*), Users!Rentals_renter_id_fkey(*)")
-                    .not('Items', 'is', null);
+                // Hent alle utleieforespørsler for gjenstander brukeren eier
+                const { data: requestData, error: requestError } =
+                    await supabaseClient
+                        .from("Rentals")
+                        .select("*, Items(*), Users!Rentals_renter_id_fkey(*)")
+                        .not("Items", "is", null);
 
                 if (rentalError || requestError) {
                     setError("Error fetching rentals or requests");
                     console.error(rentalError || requestError);
                 } else {
-                    // Process rental data to include item title, location and owner name
-                    const processedRentals = (rentalData || []).map(rental => {
-                        const ownerId = rental.Items?.owner_id;
-                        return {
-                            ...rental,
-                            item_title: rental.Items?.title || 'Ukjent gjenstand',
-                            item_location: rental.Items?.location || 'Ukjent adresse',
-                            owner_name: ownerId && ownerData[ownerId] ? ownerData[ownerId] : `Eier #${ownerId || 'ukjent'}`
-                        };
-                    });
-                    
+                    // Prosesser utleieforespørsler for å inkludere gjenstandsinformasjon og eierinformasjon
+                    const processedRentals = (rentalData || []).map(
+                        (rental) => {
+                            const ownerId = rental.Items?.owner_id;
+                            return {
+                                ...rental,
+                                item_title:
+                                    rental.Items?.title || "Ukjent gjenstand",
+                                item_location:
+                                    rental.Items?.location || "Ukjent adresse",
+                                owner_name:
+                                    ownerId && ownerData[ownerId]
+                                        ? ownerData[ownerId]
+                                        : `Eier #${ownerId || "ukjent"}`,
+                            };
+                        }
+                    );
+
                     setRentals(processedRentals);
-                    
-                    // Filter and process requests to only include those for items owned by the user
+
+                    // Filtrer utleieforespørsler for gjenstander brukeren eier
                     const filteredRequests = (requestData || [])
-                        .filter(request => request.Items && request.Items.owner_id === userId)
-                        .map(request => ({
+                        .filter(
+                            (request) =>
+                                request.Items &&
+                                request.Items.owner_id === userId
+                        )
+                        .map((request) => ({
                             ...request,
-                            item_title: request.Items?.title || 'Ukjent gjenstand',
-                            item_location: request.Items?.location || 'Ukjent adresse',
-                            renter_name: request.Users?.username || `Bruker #${request.renter_id}`
+                            item_title:
+                                request.Items?.title || "Ukjent gjenstand",
+                            item_location:
+                                request.Items?.location || "Ukjent adresse",
+                            renter_name:
+                                request.Users?.username ||
+                                `Bruker #${request.renter_id}`,
                         }));
-                        
+
                     setRequests(filteredRequests);
                 }
             } catch (err) {
@@ -112,11 +166,12 @@ const ManageRentals: React.FC = () => {
     const checkIfDatesAvailable = async (rentalId: number) => {
         try {
             // Hent informasjon om den aktuelle utleien
-            const { data: rentalData, error: rentalError } = await supabaseClient
-                .from("Rentals")
-                .select("item_id, start_date, end_date")
-                .eq("id", rentalId)
-                .single();
+            const { data: rentalData, error: rentalError } =
+                await supabaseClient
+                    .from("Rentals")
+                    .select("item_id, start_date, end_date")
+                    .eq("id", rentalId)
+                    .single();
 
             if (rentalError || !rentalData) {
                 console.error("Error fetching rental:", rentalError);
@@ -124,15 +179,19 @@ const ManageRentals: React.FC = () => {
             }
 
             // Hent alle godkjente utleier for samme gjenstand
-            const { data: existingRentals, error: existingError } = await supabaseClient
-                .from("Rentals")
-                .select("start_date, end_date")
-                .eq("item_id", rentalData.item_id)
-                .eq("status", "accepted")
-                .neq("id", rentalId); // Ekskluder den aktuelle utleien
+            const { data: existingRentals, error: existingError } =
+                await supabaseClient
+                    .from("Rentals")
+                    .select("start_date, end_date")
+                    .eq("item_id", rentalData.item_id)
+                    .eq("status", "accepted")
+                    .neq("id", rentalId); // Ekskluder den aktuelle utleien
 
             if (existingError) {
-                console.error("Error fetching existing rentals:", existingError);
+                console.error(
+                    "Error fetching existing rentals:",
+                    existingError
+                );
                 return false;
             }
 
@@ -141,13 +200,13 @@ const ManageRentals: React.FC = () => {
             }
 
             // Konverter datoene til Date-objekter for å unngå tidssoneproblemer
-            const startDate = new Date(rentalData.start_date + 'T12:00:00');
-            const endDate = new Date(rentalData.end_date + 'T12:00:00');
+            const startDate = new Date(rentalData.start_date + "T12:00:00");
+            const endDate = new Date(rentalData.end_date + "T12:00:00");
 
             // Sjekk om det er overlapp med eksisterende utleier
             for (const rental of existingRentals) {
-                const existingStart = new Date(rental.start_date + 'T12:00:00');
-                const existingEnd = new Date(rental.end_date + 'T12:00:00');
+                const existingStart = new Date(rental.start_date + "T12:00:00");
+                const existingEnd = new Date(rental.end_date + "T12:00:00");
 
                 // Sjekk om datoene overlapper
                 if (
@@ -165,13 +224,18 @@ const ManageRentals: React.FC = () => {
         }
     };
 
-    const handleUpdateStatus = async (rentalId: number, status: "accepted" | "declined") => {
+    const handleUpdateStatus = async (
+        rentalId: number,
+        status: "accepted" | "declined"
+    ) => {
         try {
             // Hvis status er "accepted", sjekk først om datoene er ledige
             if (status === "accepted") {
                 const datesAvailable = await checkIfDatesAvailable(rentalId);
                 if (!datesAvailable) {
-                    alert("Kan ikke godta forespørselen fordi datoene overlapper med en annen godkjent utleie.");
+                    alert(
+                        "Kan ikke godta forespørselen fordi datoene overlapper med en annen godkjent utleie."
+                    );
                     return;
                 }
             }
@@ -224,32 +288,44 @@ const ManageRentals: React.FC = () => {
         );
     }
 
-    const filteredRentals = rentals.filter(rental => rental.status === activeTab);
-    const filteredRequests = requests.filter(request => request.status === activeTab);
+    const filteredRentals = rentals.filter(
+        (rental) => rental.status === activeTab
+    );
+    const filteredRequests = requests.filter(
+        (request) => request.status === activeTab
+    );
 
     return (
         <div className="w-full h-[calc(100vh-4rem)]">
             <div className="flex flex-col h-full gap-6 px-5 py-6">
                 <div className="flex justify-between items-center">
-                    <h1 className="text-3xl font-bold">Administrer utleieforespørsler</h1>
+                    <h1 className="text-3xl font-bold">
+                        Administrer utleieforespørsler
+                    </h1>
                 </div>
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex gap-4">
-                        <Button 
-                            variant={activeTab === 'pending' ? 'default' : 'outline'}
-                            onClick={() => setActiveTab('pending')}
+                        <Button
+                            variant={
+                                activeTab === "pending" ? "default" : "outline"
+                            }
+                            onClick={() => setActiveTab("pending")}
                         >
                             Ventende
                         </Button>
                         <Button
-                            variant={activeTab === 'accepted' ? 'default' : 'outline'}
-                            onClick={() => setActiveTab('accepted')}
+                            variant={
+                                activeTab === "accepted" ? "default" : "outline"
+                            }
+                            onClick={() => setActiveTab("accepted")}
                         >
                             Godtatt
                         </Button>
                         <Button
-                            variant={activeTab === 'declined' ? 'default' : 'outline'}
-                            onClick={() => setActiveTab('declined')}
+                            variant={
+                                activeTab === "declined" ? "default" : "outline"
+                            }
+                            onClick={() => setActiveTab("declined")}
                         >
                             Avslått
                         </Button>
@@ -259,28 +335,63 @@ const ManageRentals: React.FC = () => {
                     <h2 className="text-2xl font-bold">Dine forespørsler</h2>
                     {filteredRentals.length === 0 ? (
                         <div className="flex items-center justify-center h-[calc(30vh-4rem)]">
-                            <p className="text-gray-500">Ingen utleieforespørsler</p>
+                            <p className="text-gray-500">
+                                Ingen utleieforespørsler
+                            </p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {filteredRentals.map((rental) => (
-                                <Card key={rental.id} className="mb-4 w-full h-64 flex flex-col overflow-hidden border-[#FEDEC7]">
+                                <Card
+                                    key={rental.id}
+                                    className="mb-4 w-full h-64 flex flex-col overflow-hidden border-[#FEDEC7]"
+                                >
                                     <CardHeader className="flex-shrink-0 pb-2">
-                                        <CardTitle className="text-lg truncate">{rental.item_title}</CardTitle>
-                                        <CardDescription className="truncate">{rental.item_location}</CardDescription>
+                                        <CardTitle className="text-lg truncate">
+                                            {rental.item_title}
+                                        </CardTitle>
+                                        <CardDescription className="truncate">
+                                            {rental.item_location}
+                                        </CardDescription>
                                     </CardHeader>
                                     <CardContent className="flex-grow flex flex-col justify-between py-2">
                                         <div>
-                                            <p className="text-sm font-medium">Utleier:</p>
-                                            <p className="text-sm text-muted-foreground">{rental.owner_name}</p>
-                                            <p className="text-sm font-medium mt-2">Periode:</p>
-                                            <p className="text-sm text-muted-foreground">{new Date(rental.start_date + 'T12:00:00').toLocaleDateString()} - {new Date(rental.end_date + 'T12:00:00').toLocaleDateString()}</p>
+                                            <p className="text-sm font-medium">
+                                                Utleier:
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {rental.owner_name}
+                                            </p>
+                                            <p className="text-sm font-medium mt-2">
+                                                Periode:
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {new Date(
+                                                    rental.start_date +
+                                                        "T12:00:00"
+                                                ).toLocaleDateString()}{" "}
+                                                -{" "}
+                                                {new Date(
+                                                    rental.end_date +
+                                                        "T12:00:00"
+                                                ).toLocaleDateString()}
+                                            </p>
                                         </div>
                                         <div className="mt-2">
-                                            <p className="text-sm font-medium">Status:</p>
-                                            <p className={`text-sm ${getStatusColor(rental.status)}`}>
-                                                {rental.status === 'accepted' ? 'Godtatt' : 
-                                                 rental.status === 'declined' ? 'Avslått' : 'Ventende'}
+                                            <p className="text-sm font-medium">
+                                                Status:
+                                            </p>
+                                            <p
+                                                className={`text-sm ${getStatusColor(
+                                                    rental.status
+                                                )}`}
+                                            >
+                                                {rental.status === "accepted"
+                                                    ? "Godtatt"
+                                                    : rental.status ===
+                                                      "declined"
+                                                    ? "Avslått"
+                                                    : "Ventende"}
                                             </p>
                                         </div>
                                     </CardContent>
@@ -288,41 +399,94 @@ const ManageRentals: React.FC = () => {
                             ))}
                         </div>
                     )}
-                    <h2 className="text-2xl font-bold mt-6">Forespørsler for dine gjenstander</h2>
+                    <h2 className="text-2xl font-bold mt-6">
+                        Forespørsler for dine gjenstander
+                    </h2>
                     {filteredRequests.length === 0 ? (
                         <div className="flex items-center justify-center h-[calc(30vh-4rem)]">
-                            <p className="text-gray-500">Ingen ventende forespørsler</p>
+                            <p className="text-gray-500">
+                                Ingen ventende forespørsler
+                            </p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {filteredRequests.map((request) => (
-                                <Card key={request.id} className="mb-4 w-full h-64 flex flex-col overflow-hidden border-[#FEDEC7]">
+                                <Card
+                                    key={request.id}
+                                    className="mb-4 w-full h-64 flex flex-col overflow-hidden border-[#FEDEC7]"
+                                >
                                     <CardHeader className="flex-shrink-0 pb-2">
-                                        <CardTitle className="text-lg truncate">{request.item_title}</CardTitle>
-                                        <CardDescription className="truncate">{request.item_location}</CardDescription>
+                                        <CardTitle className="text-lg truncate">
+                                            {request.item_title}
+                                        </CardTitle>
+                                        <CardDescription className="truncate">
+                                            {request.item_location}
+                                        </CardDescription>
                                     </CardHeader>
                                     <CardContent className="flex-grow flex flex-col justify-between py-2">
                                         <div>
-                                            <p className="text-sm font-medium">Leietaker:</p>
-                                            <p className="text-sm text-muted-foreground">{request.renter_name}</p>
-                                            <p className="text-sm font-medium mt-2">Periode:</p>
-                                            <p className="text-sm text-muted-foreground">{new Date(request.start_date + 'T12:00:00').toLocaleDateString()} - {new Date(request.end_date + 'T12:00:00').toLocaleDateString()}</p>
+                                            <p className="text-sm font-medium">
+                                                Leietaker:
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {request.renter_name}
+                                            </p>
+                                            <p className="text-sm font-medium mt-2">
+                                                Periode:
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {new Date(
+                                                    request.start_date +
+                                                        "T12:00:00"
+                                                ).toLocaleDateString()}{" "}
+                                                -{" "}
+                                                {new Date(
+                                                    request.end_date +
+                                                        "T12:00:00"
+                                                ).toLocaleDateString()}
+                                            </p>
                                         </div>
                                         <div className="mt-2">
-                                            {activeTab === 'pending' ? (
+                                            {activeTab === "pending" ? (
                                                 <div className="flex gap-2 -mt-10">
-                                                    <Button size="sm" onClick={() => handleUpdateStatus(request.id, "accepted")}>
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleUpdateStatus(
+                                                                request.id,
+                                                                "accepted"
+                                                            )
+                                                        }
+                                                    >
                                                         Godta
                                                     </Button>
-                                                    <Button size="sm" variant="destructive" onClick={() => handleUpdateStatus(request.id, "declined")}>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        onClick={() =>
+                                                            handleUpdateStatus(
+                                                                request.id,
+                                                                "declined"
+                                                            )
+                                                        }
+                                                    >
                                                         Avslå
                                                     </Button>
                                                 </div>
                                             ) : (
                                                 <div>
-                                                    <p className="text-sm font-medium">Status:</p>
-                                                    <p className={`text-sm ${getStatusColor(request.status)}`}>
-                                                        {request.status === 'accepted' ? 'Godtatt' : 'Avslått'}
+                                                    <p className="text-sm font-medium">
+                                                        Status:
+                                                    </p>
+                                                    <p
+                                                        className={`text-sm ${getStatusColor(
+                                                            request.status
+                                                        )}`}
+                                                    >
+                                                        {request.status ===
+                                                        "accepted"
+                                                            ? "Godtatt"
+                                                            : "Avslått"}
                                                     </p>
                                                 </div>
                                             )}
