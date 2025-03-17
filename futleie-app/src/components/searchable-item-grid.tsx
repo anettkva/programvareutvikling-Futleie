@@ -3,121 +3,142 @@ import Search from "@/components/search";
 import ItemGrid from "@/components/item-grid";
 import supabaseClient from "@/supabaseClient";
 import { Item } from "@/Types/Item";
+import CreateAdButton from "./create-ad-button";
 
 const SearchableItemGrid: React.FC = () => {
-    const [searchTerm, setSearchTerm] = useState("");
-    const [searchResults, setSearchResults] = useState<Item[]>([]);
-    const [radius, setRadius] = useState(10);
-    const [selectedCategory, setSelectedCategory] = useState<string>("");
-    const [userLocation, setUserLocation] = useState<{
-        lat: number;
-        lng: number;
-    } | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState<Item[]>([]);
+  const [radius, setRadius] = useState(10);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
-    useEffect(() => {
-        const fetchSearchResults = async () => {
-            // Basic query to fetch all items or items matching search term
-            let query = supabaseClient.from("Items").select(`
+  useEffect(() => {
+    const fetchSearchResults = async () => {
+      try {
+        // Fetch item memberships
+        const { data: memberships, error: membershipsError } =
+          await supabaseClient.from("Item-membership").select("item_id");
+
+        if (membershipsError) {
+          setError(`Failed to fetch memberships: ${membershipsError.message}`);
+          return;
+        }
+
+        const membershipItemIds = memberships.map(
+          (membership) => membership.item_id
+        );
+
+        // Basic query to fetch all items or items matching search term
+        let query = supabaseClient.from("Items").select(`
                     *,
                     Item_images(image_url),
                     Users:owner_id(username, tot_rating, rating_counter)
                 `);
 
-            // Add search filter if searchTerm exists
-            if (searchTerm.trim() !== "") {
-                query = query.or(
-                    `title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`
-                );
-            }
+        // Add search filter if searchTerm exists
+        if (searchTerm.trim() !== "") {
+          query = query.or(
+            `title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`
+          );
+        }
 
-            // Add category filter if a category is selected
-            if (selectedCategory) {
-                query = query.eq("category", selectedCategory);
-            }
+        // Add category filter if a category is selected
+        if (selectedCategory) {
+          query = query.eq("category", selectedCategory);
+        }
 
-            const { data, error } = await query;
+        const { data, error } = await query;
 
-            if (error) {
-                console.error("Error fetching search results:", error);
-                return;
-            }
+        if (error) {
+          console.error("Error fetching search results:", error);
+          return;
+        }
 
-            // Transform the data to match your Item type structure
-            let formattedResults = data.map((item) => ({
-                ...item,
-                images: item.Item_images.map(
-                    (img: { image_url: any }) => img.image_url
-                ),
-                owner: item.Users?.username || "",
-                ownerTotRating: item.Users?.tot_rating || 0,
-                ownerRatingCounter: item.Users?.rating_counter || 0,
-            }));
+        // Transform the data to match your Item type structure
+        let formattedResults = data
+          .filter((item) => !membershipItemIds.includes(item.id))
+          .map((item) => ({
+            ...item,
+            images: item.Item_images.map(
+              (img: { image_url: any }) => img.image_url
+            ),
+            owner: item.Users?.username || "",
+            ownerTotRating: item.Users?.tot_rating || 0,
+            ownerRatingCounter: item.Users?.rating_counter || 0,
+          }));
 
-            // Filter by location if userLocation is provided
-            if (userLocation && radius > 0 && radius < 100) {
-                formattedResults = formattedResults.filter((item) => {
-                    // Skip items without location data
-                    if (!item.lat || !item.lng) return false;
+        // Filter by location if userLocation is provided
+        if (userLocation && radius > 0 && radius < 100) {
+          formattedResults = formattedResults.filter((item) => {
+            // Skip items without location data
+            if (!item.lat || !item.lng) return false;
 
-                    // Calculate distance between user and item
-                    const distance = calculateDistance(
-                        userLocation.lat,
-                        userLocation.lng,
-                        item.lat,
-                        item.lng
-                    );
+            // Calculate distance between user and item
+            const distance = calculateDistance(
+              userLocation.lat,
+              userLocation.lng,
+              item.lat,
+              item.lng
+            );
 
-                    // Include the item if it's within the radius
-                    return distance <= radius;
-                });
-            }
+            // Include the item if it's within the radius
+            return distance <= radius;
+          });
+        }
 
-            setSearchResults(formattedResults);
-        };
-
-        fetchSearchResults();
-    }, [searchTerm, userLocation, radius, selectedCategory]);
-
-    // Haversine formula to calculate distance between two points on Earth
-    const calculateDistance = (
-        lat1: number,
-        lon1: number,
-        lat2: number,
-        lon2: number
-    ): number => {
-        const R = 6371; // Radius of the earth in km
-        const dLat = deg2rad(lat2 - lat1);
-        const dLon = deg2rad(lon1 - lon2);
-        const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(deg2rad(lat1)) *
-                Math.cos(deg2rad(lat2)) *
-                Math.sin(dLon / 2) *
-                Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distance = R * c; // Distance in km
-        return distance;
+        setSearchResults(formattedResults);
+      } catch (err) {
+        console.error("An unexpected error occurred", err);
+      }
     };
 
-    const deg2rad = (deg: number): number => {
-        return deg * (Math.PI / 180);
-    };
+    fetchSearchResults();
+  }, [searchTerm, userLocation, radius, selectedCategory]);
 
-    return (
-        <div>
-            <Search
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                radius={radius}
-                setRadius={setRadius}
-                userLocation={userLocation}
-                setUserLocation={setUserLocation}
-                selectedCategory={selectedCategory}
-                setSelectedCategory={setSelectedCategory}
-            />
-            <ItemGrid inputItems={searchResults} />
-        </div>
-    );
+  // Haversine formula to calculate distance between two points on Earth
+  const calculateDistance = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ): number => {
+    const R = 6371; // Radius of the earth in km
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon1 - lon2);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(deg2rad(lat1)) *
+        Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Distance in km
+    return distance;
+  };
+
+  const deg2rad = (deg: number): number => {
+    return deg * (Math.PI / 180);
+  };
+
+  return (
+    <div>
+      <Search
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        radius={radius}
+        setRadius={setRadius}
+        userLocation={userLocation}
+        setUserLocation={setUserLocation}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+      />
+      <CreateAdButton />
+      <ItemGrid inputItems={searchResults} />
+    </div>
+  );
 };
 
 export default SearchableItemGrid;
