@@ -24,7 +24,7 @@ export default function ProfilePage() {
         `
             *,
             Item_images(image_url),
-            Users:owner_id(username)
+            Users:owner_id(username, tot_rating, rating_counter)
         `
       )
       .eq("owner_id", user?.id);
@@ -42,6 +42,8 @@ export default function ProfilePage() {
           (img: { image_url: any }) => img.image_url
         ),
         owner: item.Users?.username || "",
+        ownerTotRating: item.Users?.tot_rating || 0,
+        ownerRatingCounter: item.Users?.rating_counter || 0,
       }));
       setItems(formattedResults as Item[]);
     };

@@ -5,11 +5,12 @@ import {
     CardContent,
     CardTitle,
     CardDescription,
+    CardFooter,
 } from "@/components/ui/card";
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
+
 import { Button } from "@/components/ui/button";
 import Cookies from "js-cookie";
 import Supabase from "../supabaseClient.ts";
@@ -17,11 +18,13 @@ import { User } from "../Types/User.ts";
 import CryptoJS from "crypto-js";
 
 const Profile: React.FC = () => {
-    const [userId, setUserId] = useState<Number | undefined>(undefined);
+    const [userId, setUserId] = useState<number | undefined>(undefined);
     const [username, setUsername] = useState("[Brukernavn]");
     const [email, setEmail] = useState("epost@example.com");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [userRating, setUserRating] = useState<number | null>(null);
+    const [ratingCounter, setRatingCounter] = useState<number>(0);
 
     useEffect(() => {
         async function getUser() {
@@ -34,13 +37,15 @@ const Profile: React.FC = () => {
             const user = JSON.parse(userCookie as string);
 
             const { data, error } = await Supabase.from("Users")
-                .select("id, username, email")
+                .select("id, username, email, tot_rating, rating_counter")
                 .eq("username", user.username);
 
             if (data) {
-                setUserId(data[0].id as Number);
+                setUserId(data[0].id as number);
                 setUsername(data[0].username as string);
                 setEmail(data[0].email as string);
+                setUserRating(data[0].tot_rating);
+                setRatingCounter(data[0].rating_counter || 0);
             }
             if (error) {
                 console.error("Error fetching user id:", error);
@@ -52,7 +57,7 @@ const Profile: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         async function uploadToSupabase() {
-            const requestBody: any = {
+            const requestBody: { username: string; email: string; password_hash?: string } = {
                 username,
                 email,
             };
@@ -73,6 +78,7 @@ const Profile: React.FC = () => {
                 .select("id, username, password_hash");
 
             if (error) {
+                console.error("Error updating user:", error);
             } else {
                 const user = data[0] as User;
                 if (user === undefined) {
@@ -150,6 +156,24 @@ const Profile: React.FC = () => {
                     </div>
                 </CardContent>
             </form>
+            <CardFooter className="flex flex-col items-start pt-4 border-t">
+                <CardTitle className="text-xl mb-2">Min vurdering</CardTitle>
+                <div className="flex items-center">
+                    {userRating !== null && ratingCounter > 0 ? (
+                        <>
+                            <span className="text-2xl font-bold mr-2">
+                                {(userRating / ratingCounter).toFixed(1)}
+                            </span>
+                            <span className="text-2xl text-yellow-500">★</span>
+                            <span className="ml-2 text-sm text-gray-500">
+                                ({ratingCounter} {ratingCounter === 1 ? 'vurdering' : 'vurderinger'})
+                            </span>
+                        </>
+                    ) : (
+                        <span className="text-gray-500">Ingen vurderinger ennå</span>
+                    )}
+                </div>
+            </CardFooter>
         </Card>
     );
 };
