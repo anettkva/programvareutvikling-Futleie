@@ -22,7 +22,7 @@ const App: React.FC<{}> = () => {
     const userCookie = Cookie.get("user");
     const isAuthenticated = userCookie && userCookie.length > 0;
 
-    // Allow access to login and signup pages even when not authenticated
+    // Naviger til login hvis bruker ikke er autentisert
     if (
         !isAuthenticated &&
         !["/login", "/signup"].includes(location.pathname)
@@ -30,7 +30,7 @@ const App: React.FC<{}> = () => {
         return <Navigate to="/login" replace />;
     }
 
-    // Redirect authenticated users away from login/signup to gallery
+    // Naviger til galleri hvis bruker er autentisert og prøver å gå til login eller signup
     if (isAuthenticated && ["/login", "/signup"].includes(location.pathname)) {
         return <Navigate to="/gallery" replace />;
     }

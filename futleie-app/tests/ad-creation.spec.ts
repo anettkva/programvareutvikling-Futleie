@@ -1,125 +1,126 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-// Helper function to generate unique ad names
+// Hjelpefunksjon for unike annonsenavn
 function generateUniqueName(prefix: string): string {
-  const randomString = Math.random().toString(36).substring(2, 8);
-  return `${prefix}_${randomString}`;
+    const randomString = Math.random().toString(36).substring(2, 8);
+    return `${prefix}_${randomString}`;
 }
 
-test.describe('Ad Creation - Image Upload', () => {
-  // Helper function to login before each test
-  async function loginUser(page) {
-    await page.goto('/login');
-    await page.getByLabel('Brukernavn').fill('testuser');
-    await page.getByLabel('Passord').fill('testpass');
-    await page.getByRole('button', { name: 'Logg inn' }).click();
-    await page.waitForURL('/gallery');
-  }
+test.describe("Ad Creation - Image Upload", () => {
+    // Hjelpefunksjon for innlogging før hver test
+    async function loginUser(page) {
+        await page.goto("/login");
+        await page.getByLabel("Brukernavn").fill("testuser");
+        await page.getByLabel("Passord").fill("testpass");
+        await page.getByRole("button", { name: "Logg inn" }).click();
+        await page.waitForURL("/gallery");
+    }
 
-  test.beforeEach(async ({ page }) => {
-    // Login and navigate to create ad page
-    await loginUser(page);
-    await page.goto('/create-ad');
-    await expect(page).toHaveURL('/create-ad');
-  });
-
-  test('creates ad with single image upload', async ({ page }) => {
-    // Fill in the required fields
-    const uniqueName = generateUniqueName('Test Item');
-    await page.getByLabel('Title').fill(uniqueName);
-    await page.getByLabel('Description').fill('This is a test item description');
-
-    // Upload a single image
-    await page.setInputFiles('input[type="file"]', {
-      name: 'test-image.jpg',
-      mimeType: 'image/jpeg',
-      buffer: Buffer.from('fake-image-content')
+    test.beforeEach(async ({ page }) => {
+        // Logg inn og naviger til annonseopprettelse
+        await loginUser(page);
+        await page.goto("/create-ad");
+        await expect(page).toHaveURL("/create-ad");
     });
 
-    // Submit the form
-    await page.getByRole('button', { name: 'Upload Ad' }).click();
+    test("creates ad with single image upload", async ({ page }) => {
+        // Fyll ut påkrevde felt
+        const uniqueName = generateUniqueName("Test Item");
+        await page.getByLabel("Title").fill(uniqueName);
+        await page
+            .getByLabel("Description")
+            .fill("This is a test item description");
 
-    // Should be redirected to home page after successful submission
-    await page.waitForURL('/');
+        // Last opp ett bilde
+        await page.setInputFiles('input[type="file"]', {
+            name: "test-image.jpg",
+            mimeType: "image/jpeg",
+            buffer: Buffer.from("fake-image-content"),
+        });
 
-    // Find and click the created ad
-    await page.getByText(uniqueName).click();
+        // Send skjema
+        await page.getByRole("button", { name: "Upload Ad" }).click();
 
-    // Click the delete button
-    await page.getByRole('button', { name: 'Slett annonse' }).click();
+        // Burde omdirigeres til forsiden etter vellykket innsending
+        await page.waitForURL("/");
 
-    // Verify we're back at the home page
-    await page.waitForURL('/');
-  });
+        // Finn og klikk på den opprettede annonsen
+        await page.getByText(uniqueName).click();
 
-  test('creates ad with multiple image upload', async ({ page }) => {
-    // Fill in the required fields
-    const uniqueMultiName = generateUniqueName('Multi-Image Item');
-    await page.getByLabel('Title').fill(uniqueMultiName);
-    await page.getByLabel('Description').fill('Item with multiple images');
+        // Klikk på sletteknappen
+        await page.getByRole("button", { name: "Slett annonse" }).click();
 
-    // Create multiple test files
-    const testFiles = [
-      {
-        name: 'image1.jpg',
-        mimeType: 'image/jpeg',
-        buffer: Buffer.from('fake-image-1')
-      },
-      {
-        name: 'image2.jpg',
-        mimeType: 'image/jpeg',
-        buffer: Buffer.from('fake-image-2')
-      }
-    ];
-
-    // Upload multiple images
-    await page.setInputFiles('input[type="file"]', testFiles);
-
-    // Submit the form
-    await page.getByRole('button', { name: 'Upload Ad' }).click();
-
-    // Should be redirected to home page after successful submission
-    await page.waitForURL('/');
-
-    // Find and click the created ad
-    await page.getByText('Multi-Image Item').click();
-
-    // Click the delete button
-    await page.getByRole('button', { name: 'Slett annonse' }).click();
-
-    // Verify we're back at the home page
-    await page.waitForURL('/');
-  });
-
-  test('validates required fields', async ({ page }) => {
-    // Try to submit without filling required fields
-    await page.getByRole('button', { name: 'Upload Ad' }).click();
-
-    // Check for validation messages
-    const titleError = page.getByText('Title is required');
-    const descriptionError = page.getByText('Description is required');
-    
-    await expect(titleError).toBeVisible();
-    await expect(descriptionError).toBeVisible();
-  });
-
-  test('validates image file type', async ({ page }) => {
-    // Fill in the required fields
-    await page.getByLabel('Title').fill('Test Item');
-    await page.getByLabel('Description').fill('This is a test item');
-
-    // Try to upload an invalid file type
-    await page.setInputFiles('input[type="file"]', {
-      name: 'invalid.txt',
-      mimeType: 'text/plain',
-      buffer: Buffer.from('not-an-image')
+        // Verifiser at vi er tilbake på forsiden
+        await page.waitForURL("/");
     });
 
-    // Submit the form
-    await page.getByRole('button', { name: 'Upload Ad' }).click();
+    test("creates ad with multiple image upload", async ({ page }) => {
+        // Fyll ut påkrevde felt
+        const uniqueMultiName = generateUniqueName("Multi-Image Item");
+        await page.getByLabel("Title").fill(uniqueMultiName);
+        await page.getByLabel("Description").fill("Item with multiple images");
 
-    // Should not be redirected due to invalid file
-    await expect(page).toHaveURL('/create-ad');
-  });
+        // Opprett flere testfiler
+        const testFiles = [
+            {
+                name: "image1.jpg",
+                mimeType: "image/jpeg",
+                buffer: Buffer.from("fake-image-1"),
+            },
+            {
+                name: "image2.jpg",
+                mimeType: "image/jpeg",
+                buffer: Buffer.from("fake-image-2"),
+            },
+        ];
+
+        // Last opp flere bilder
+        await page.setInputFiles('input[type="file"]', testFiles);
+
+        // Send skjema
+        await page.getByRole("button", { name: "Upload Ad" }).click();
+
+        // Burde omdirigeres til forsiden etter vellykket innsending
+        await page.waitForURL("/");
+
+        // Finn og klikk på den opprettede annonsen
+        await page.getByText("Multi-Image Item").click();
+
+        // Klikk på sletteknappen
+        await page.getByRole("button", { name: "Slett annonse" }).click();
+
+        // Verifiser at vi er tilbake på forsiden
+        await page.waitForURL("/");
+    });
+
+    test("validates required fields", async ({ page }) => {
+        // Prøv å sende skjema uten å fylle ut påkrevde felt
+        await page.getByRole("button", { name: "Upload Ad" }).click();
+
+        // Sjekk valideringsmeldinger
+        const titleError = page.getByText("Title is required");
+        const descriptionError = page.getByText("Description is required");
+
+        await expect(titleError).toBeVisible();
+        await expect(descriptionError).toBeVisible();
+    });
+
+    test("validates image file type", async ({ page }) => {
+        // Fyll ut påkrevde felt
+        await page.getByLabel("Title").fill("Test Item");
+        await page.getByLabel("Description").fill("This is a test item");
+
+        // Prøv å laste opp ugyldig filtype
+        await page.setInputFiles('input[type="file"]', {
+            name: "invalid.txt",
+            mimeType: "text/plain",
+            buffer: Buffer.from("not-an-image"),
+        });
+
+        // Send skjema
+        await page.getByRole("button", { name: "Upload Ad" }).click();
+
+        // Burde ikke omdirigeres på grunn av ugyldig fil
+        await expect(page).toHaveURL("/create-ad");
+    });
 });
-
