@@ -9,28 +9,34 @@ import {
 import Cookies from "js-cookie";
 import HistoryItem from "@/components/history-item";
 
-// We're using the RentalHistoryItem type from rental-history.ts
-
+/**
+ * @component Historikk
+ * @description En komponent som viser brukerens utleiehistorikk.
+ * Viser både ting brukeren har leid og ting brukeren har leid ut.
+ * Inneholder funksjonalitet for å veksle mellom disse visningene og
+ * filtrere for å vise kun tidligere utleier.
+ *
+ * Komponenten henter automatisk data basert på innlogget bruker
+ * (fra brukerens cookies) og viser lastestatus og eventuelle feilmeldinger.
+ */
 const Historikk: React.FC = () => {
-    // Tab state
+    // Setter aktiv tab
     const [activeTab, setActiveTab] = useState<"leid" | "leidUt">("leid");
 
-    // Filter state
+    // Setter om kun tidligere utleie skal vises
     const [showPastOnly, setShowPastOnly] = useState<boolean>(false);
 
-    // State for rental history items
     const [leidItems, setLeidItems] = useState<RentalHistoryItem[]>([]);
     const [leidUtItems, setLeidUtItems] = useState<RentalHistoryItem[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Fetch rental history data when component mounts
-    // Define fetchData outside useEffect so we can call it from debug button
+    // Henter data fra databasen
     const fetchData = async () => {
         try {
             setLoading(true);
 
-            // Get the current user ID from the cookie
+            // Henter brukerdata fra cookies
             const userCookie = Cookies.get("user");
             if (!userCookie || userCookie.length === 0) {
                 setError("Du må være logget inn for å se utleiehistorikk");
@@ -41,14 +47,7 @@ const Historikk: React.FC = () => {
             const userData = JSON.parse(userCookie);
             const userId = userData.id;
 
-            // Log user data for debugging
-            console.log("=== HISTORIKK USER DATA ====");
-            console.log("User cookie data:", userData);
-            console.log("User ID:", userId);
-            console.log("Show past only:", showPastOnly);
-            console.log("===========================");
-
-            // Fetch rental history from the database
+            // Henter utleiehistorikk fra databasen
             const { leidItems: rentedItems, leidUtItems: rentedOutItems } =
                 await fetchRentalHistory(userId, showPastOnly);
 
@@ -126,7 +125,7 @@ const Historikk: React.FC = () => {
                 </div>
             )}
 
-            {/* Tab content - only show when not loading and no errors */}
+            {/* Tab content - vises kun når den ikke laster og det ikke er feil */}
             {!loading && !error && activeTab === "leid" && (
                 <div>
                     <h2 className="text-xl font-semibold mb-4">

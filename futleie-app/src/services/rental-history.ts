@@ -17,10 +17,10 @@ export type RentalHistoryItem = {
 };
 
 /**
- * Fetches rental history for a user
- * @param userId The ID of the user
- * @param pastOnly If true, only returns rentals that have ended (past rentals)
- * @returns Object containing items rented by the user and items rented out by the user
+ * Henter leiehistorikk for en bruker
+ * @param userId ID-en til brukeren
+ * @param pastOnly Hvis satt til true, returneres bare utløpte leieforhold
+ * @returns Objekt med gjenstander leid av brukeren og gjenstander leid ut av brukeren
  */
 export const fetchRentalHistory = async (
     userId: number,
@@ -97,7 +97,7 @@ export const fetchRentalHistory = async (
 };
 
 /**
- * Formater items leid av brukeren
+ * Formaterer gjenstander leid av brukeren
  */
 const formatRentedItems = (rentals: any[]): RentalHistoryItem[] => {
     const currentDate = new Date().toISOString().split("T")[0];
@@ -125,7 +125,7 @@ const formatRentedItems = (rentals: any[]): RentalHistoryItem[] => {
 };
 
 /**
- * Formater items leid ut av brukeren
+ * Formaterer gjenstander leid ut av brukeren
  */
 const formatRentedOutItems = (rentals: any[]): RentalHistoryItem[] => {
     const currentDate = new Date().toISOString().split("T")[0];
@@ -153,7 +153,7 @@ const formatRentedOutItems = (rentals: any[]): RentalHistoryItem[] => {
 };
 
 /**
- * Formater datoer til en pen streng
+ * Formaterer datoperiode til en lesbar streng
  */
 const formatDatePeriod = (startDate: string, endDate: string): string => {
     const formatDate = (dateString: string) => {
@@ -169,7 +169,7 @@ const formatDatePeriod = (startDate: string, endDate: string): string => {
 };
 
 /**
- * Oppdater vurdering på et leieforhold
+ * Oppdaterer vurdering på et leieforhold
  */
 export const updateRentalRating = async (rentalId: number, rating: number) => {
     try {

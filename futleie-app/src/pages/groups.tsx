@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import supabaseClient from "@/supabaseClient";
 import Cookies from "js-cookie";
 
-// Define the Group type
+// Definer type for gruppe
 type Group = {
     id: number;
     name: string;
@@ -14,6 +14,15 @@ type Group = {
     created_at: string;
 };
 
+/**
+ * Groups komponenten viser alle grupper brukeren er medlem av og eier.
+ *
+ * @returns {JSX.Element} En side som viser grupper brukeren eier og er medlem av.
+ *
+ * @example
+ * // Brukt i routing i App.tsx
+ * <Route path="/grupper" element={<Groups />} />
+ */
 export default function Groups() {
     const navigate = useNavigate();
     const [groups, setGroups] = useState<Group[]>([]);
@@ -23,10 +32,16 @@ export default function Groups() {
     const [joinedGroupsLoading, setJoinedGroupsLoading] = useState(true);
     const [groupCode, setGroupCode] = useState("");
 
+    /**
+     * Navigerer til siden for å opprette en ny gruppe.
+     */
     const handleCreateGroup = () => {
         navigate("/create-group");
     };
 
+    /**
+     * Oppdaterer databasen slik at brukeren blir med i en gruppe.
+     */
     const handleJoinGroup = async () => {
         const { data, error } = await supabaseClient
             .from("Groups")
@@ -60,6 +75,7 @@ export default function Groups() {
         }
     };
 
+    // Henter gruppen(e) brukeren eier
     useEffect(() => {
         async function fetchGroups() {
             try {
@@ -98,6 +114,7 @@ export default function Groups() {
         fetchGroups();
     }, []);
 
+    // Henter gruppen(e) brukeren er medlem av
     useEffect(() => {
         async function getJoinedGroups() {
             const userCookie = Cookies.get("user");
@@ -132,7 +149,10 @@ export default function Groups() {
                     console.error("Error fetching groups:", groupError);
                     setError(`Failed to fetch groups: ${groupError.message}`);
                 } else {
-                    setJoinedGroups(groupData || []);
+                    const filteredGroupData = groupData.filter((group) => {
+                        return group.owner_id !== userId;
+                    });
+                    setJoinedGroups(filteredGroupData || []);
                     setJoinedGroupsLoading(false);
                 }
             }
@@ -143,7 +163,7 @@ export default function Groups() {
     return (
         <div className="container mx-auto py-6">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">Grupper</h1>
+                <h1 className="text-2xl font-bold">Dine grupper</h1>
                 <Button onClick={handleCreateGroup}>Opprett gruppe</Button>
                 <div className="flex items-center space-x-2">
                     <input
@@ -210,7 +230,9 @@ export default function Groups() {
                 </div>
             )}
             <>
-                <h2 className="text-2xl font-bold mt-8 mb-4">Dine grupper</h2>
+                <h2 className="text-2xl font-bold mt-8 mb-4">
+                    Grupper du er medlem i
+                </h2>
                 {joinedGroupsLoading ? (
                     <div className="bg-white rounded-lg shadow p-6 flex justify-center">
                         <p>Laster grupper du deltar i...</p>

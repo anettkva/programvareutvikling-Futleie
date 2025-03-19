@@ -1,251 +1,279 @@
-// checks that the user is redirected to the login page when not authenticated
-// and that the login page contains the correct elements
-// and that you can accsess the login page by navigating directly to it
+// sjekker omdirigering til innlogging når ikke autentisert
+// sjekker at innloggingssiden har riktige elementer
+// sjekker direkte tilgang til innloggingssiden
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test.describe('Authentication Flow', () => {
-  // Helper function to go to login page and wait for it to load
-  async function goToLoginPage(page) {
-    await page.goto('/login');
-    await page.waitForLoadState('networkidle');
-  }
-  test('redirects to login when not authenticated', async ({ page }) => {
-    // Start from the gallery page
-    await page.goto('/gallery');
+test.describe("Authentication Flow", () => {
+    // Hjelpefunksjon for innloggingssiden
+    async function goToLoginPage(page) {
+        await page.goto("/login");
+        await page.waitForLoadState("networkidle");
+    }
+    test("redirects to login when not authenticated", async ({ page }) => {
+        // Start fra gallerisiden
+        await page.goto("/gallery");
 
-    // Should be redirected to login
-    await page.waitForURL('/login');
-    
-    // Wait for the page to be fully loaded
-    await page.waitForLoadState('networkidle');
-    
-    // Verify login page elements are visible
-    await expect(page.locator('.text-2xl').filter({ hasText: 'Logg inn' })).toBeVisible();
-    await expect(page.getByLabel('Brukernavn')).toBeVisible();
-    await expect(page.getByLabel('Passord')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Logg inn' })).toBeVisible();
-  });
+        // Sjekk omdirigering til innlogging
+        await page.waitForURL("/login");
 
-  test('login page is accessible directly', async ({ page }) => {
-    // Go to login page directly
-    await page.goto('/login');
+        // Vent på full sidelasting
+        await page.waitForLoadState("networkidle");
 
-    // Should stay on login page
-    await expect(page).toHaveURL('/login');
-  });
-
-  test.describe('Login Form Validation', () => {
-    test.beforeEach(async ({ page }) => {
-      await goToLoginPage(page);
+        // Verifiser synlige elementer
+        await expect(
+            page.locator(".text-2xl").filter({ hasText: "Logg inn" })
+        ).toBeVisible();
+        await expect(page.getByLabel("Brukernavn")).toBeVisible();
+        await expect(page.getByLabel("Passord")).toBeVisible();
+        await expect(
+            page.getByRole("button", { name: "Logg inn" })
+        ).toBeVisible();
     });
 
-    test('shows validation error for empty username', async ({ page }) => {
-      // Fill only password
-      await page.getByLabel('Passord').fill('somepassword');
-      await page.getByRole('button', { name: 'Logg inn' }).click();
-      
-      // Verify username is required
-      const usernameInput = page.getByLabel('Brukernavn');
-      await expect(usernameInput).toHaveAttribute('required', '');
+    test("login page is accessible directly", async ({ page }) => {
+        // Gå direkte til innloggingssiden
+        await page.goto("/login");
+
+        // Bli på innloggingssiden
+        await expect(page).toHaveURL("/login");
     });
 
-    test('shows validation error for empty password', async ({ page }) => {
-      // Fill only username
-      await page.getByLabel('Brukernavn').fill('someuser');
-      await page.getByRole('button', { name: 'Logg inn' }).click();
-      
-      // Verify password is required
-      const passwordInput = page.getByLabel('Passord');
-      await expect(passwordInput).toHaveAttribute('required', '');
-    });
-
-    test('shows error message for invalid credentials', async ({ page }) => {
-      // Create a promise that will resolve when the dialog appears
-      const dialogPromise = new Promise((resolve) => {
-        page.on('dialog', async dialog => {
-          expect(dialog.message()).toBe('Feil brukernavn eller passord');
-          await dialog.accept();
-          resolve(true);
+    test.describe("Login Form Validation", () => {
+        test.beforeEach(async ({ page }) => {
+            await goToLoginPage(page);
         });
-      });
 
-      // Fill in invalid credentials
-      await page.getByLabel('Brukernavn').fill('invaliduser');
-      await page.getByLabel('Passord').fill('invalidpass');
-      
-      // Submit form
-      await page.getByRole('button', { name: 'Logg inn' }).click();
+        test("viser valideringsfeil for tomt brukernavn", async ({ page }) => {
+            // Fyll kun passord
+            await page.getByLabel("Passord").fill("somepassword");
+            await page.getByRole("button", { name: "Logg inn" }).click();
 
-      // Wait for the dialog to appear and verify it did
-      const dialogAppeared = await dialogPromise;
-      expect(dialogAppeared).toBe(true);
-    });
-  });
+            // Verifiser at brukernavn er påkrevd
+            const usernameInput = page.getByLabel("Brukernavn");
+            await expect(usernameInput).toHaveAttribute("required", "");
+        });
 
-  test.describe('Successful Login', () => {
-    test.beforeEach(async ({ page }) => {
-      await goToLoginPage(page);
-    });
+        test("viser valideringsfeil for tomt passord", async ({ page }) => {
+            // Fyll kun brukernavn
+            await page.getByLabel("Brukernavn").fill("someuser");
+            await page.getByRole("button", { name: "Logg inn" }).click();
 
-    test('successful login redirects to gallery and sets cookie', async ({ page }) => {
-      // Fill in valid credentials
-      await page.getByLabel('Brukernavn').fill('testuser'); // Replace with actual test user
-      await page.getByLabel('Passord').fill('testpass'); // Replace with actual test password
-      
-      // Submit form
-      await page.getByRole('button', { name: 'Logg inn' }).click();
-      
-      // Should be redirected to gallery
-      await page.waitForURL('/gallery');
-      
-      // Verify cookie is set
-      const cookies = await page.context().cookies();
-      const userCookie = cookies.find(cookie => cookie.name === 'user');
-      expect(userCookie).toBeTruthy();
-      expect(userCookie?.domain).toBe('localhost');
-      
-      // Verify cookie value exists
-      expect(userCookie?.value).toBeTruthy();
-      
-      try {
-        // Decode the URL-encoded cookie value before parsing
-        const decodedValue = decodeURIComponent(userCookie?.value || '');
-        const userData = JSON.parse(decodedValue);
-        expect(userData).toHaveProperty('username');
-        expect(userData).toHaveProperty('id');
-      } catch (e) {
-        throw new Error(`Failed to parse user cookie: ${userCookie?.value}. Error: ${e.message}`);
-      }
+            // Verifiser at passord er påkrevd
+            const passwordInput = page.getByLabel("Passord");
+            await expect(passwordInput).toHaveAttribute("required", "");
+        });
+
+        test("viser feilmelding for ugyldige legitimasjoner", async ({
+            page,
+        }) => {
+            // Lag et løfte som løses når dialogen vises
+            const dialogPromise = new Promise((resolve) => {
+                page.on("dialog", async (dialog) => {
+                    expect(dialog.message()).toBe(
+                        "Feil brukernavn eller passord"
+                    );
+                    await dialog.accept();
+                    resolve(true);
+                });
+            });
+
+            // Fyll inn ugyldige legitimasjoner
+            await page.getByLabel("Brukernavn").fill("invaliduser");
+            await page.getByLabel("Passord").fill("invalidpass");
+
+            // Send inn skjema
+            await page.getByRole("button", { name: "Logg inn" }).click();
+
+            // Vent på at dialogen vises og verifiser at den gjorde det
+            const dialogAppeared = await dialogPromise;
+            expect(dialogAppeared).toBe(true);
+        });
     });
 
-    test('logged in user can access protected routes', async ({ page }) => {
-      // First login
-      await page.getByLabel('Brukernavn').fill('testuser'); // Replace with actual test user
-      await page.getByLabel('Passord').fill('testpass'); // Replace with actual test password
-      await page.getByRole('button', { name: 'Logg inn' }).click();
-      await page.waitForURL('/gallery');
-      
-      // Try accessing other protected routes
-      await page.goto('/gallery');
-      await expect(page).toHaveURL('/gallery');
-      
-      await page.goto('/create-ad');
-      await expect(page).toHaveURL('/create-ad');
-    });
-  });
+    test.describe("Successful Login", () => {
+        test.beforeEach(async ({ page }) => {
+            await goToLoginPage(page);
+        });
 
-  test.describe('Logout Functionality', () => {
-    test.beforeEach(async ({ page }) => {
-      // First ensure we're logged in
-      await goToLoginPage(page);
-      await page.getByLabel('Brukernavn').fill('testuser');
-      await page.getByLabel('Passord').fill('testpass');
-      await page.getByRole('button', { name: 'Logg inn' }).click();
-      await page.waitForURL('/gallery');
-    });
+        test("vellykket innlogging omdirigerer til galleri og setter cookie", async ({
+            page,
+        }) => {
+            // Fyll inn gyldige legitimasjoner
+            await page.getByLabel("Brukernavn").fill("testuser"); // Erstatt med faktisk testbruker
+            await page.getByLabel("Passord").fill("testpass"); // Erstatt med faktisk testpassord
 
-    test('logout removes user cookie and redirects to login', async ({ page }) => {
-      // Ensure we're on a page with logout button
-      await expect(page.getByRole('button', { name: 'Logg ut' })).toBeVisible();
-      
-      // Click logout button and wait for navigation to start
-      await Promise.all([
-        page.waitForURL('/login'),
-        page.getByRole('button', { name: 'Logg ut' }).click()
-      ]);
+            // Send inn skjema
+            await page.getByRole("button", { name: "Logg inn" }).click();
 
-      // Wait for any pending network requests to complete
-      await page.waitForLoadState('networkidle');
+            // Bli omdirigert til galleri
+            await page.waitForURL("/gallery");
 
-      // Verify cookie is removed - retry a few times if needed
-      await expect(async () => {
-        const cookies = await page.context().cookies();
-        const userCookie = cookies.find(cookie => cookie.name === 'user');
-        expect(userCookie).toBeUndefined();
-      }).toPass({ timeout: 5000 });
-    });
+            // Verifiser at cookie er satt
+            const cookies = await page.context().cookies();
+            const userCookie = cookies.find((cookie) => cookie.name === "user");
+            expect(userCookie).toBeTruthy();
+            expect(userCookie?.domain).toBe("localhost");
 
-    test('cannot access protected routes after logout', async ({ page }) => {
-      // Ensure we're on a page with logout button
-      await expect(page.getByRole('button', { name: 'Logg ut' })).toBeVisible();
-      
-      // First logout with proper wait conditions
-      await Promise.all([
-        page.waitForURL('/login'),
-        page.getByRole('button', { name: 'Logg ut' }).click()
-      ]);
-      
-      // Wait for any pending network requests
-      await page.waitForLoadState('networkidle');
+            // Verifiser at cookie-verdi eksisterer
+            expect(userCookie?.value).toBeTruthy();
 
-      // Try accessing protected routes with proper wait conditions
-      await Promise.all([
-        page.waitForURL('/login'),
-        page.goto('/gallery')
-      ]);
-      
-      await Promise.all([
-        page.waitForURL('/login'),
-        page.goto('/create-ad')
-      ]);
-    });
-  });
+            try {
+                // Dekod URL-kodet cookie-verdi før parsing
+                const decodedValue = decodeURIComponent(
+                    userCookie?.value || ""
+                );
+                const userData = JSON.parse(decodedValue);
+                expect(userData).toHaveProperty("username");
+                expect(userData).toHaveProperty("id");
+            } catch (e) {
+                throw new Error(
+                    `Kunne ikke parse brukercookie: ${userCookie?.value}. Feil: ${e.message}`
+                );
+            }
+        });
 
-  test.describe('Session Persistence', () => {
-    test.beforeEach(async ({ page }) => {
-      // First ensure we're logged in
-      await goToLoginPage(page);
-      await page.getByLabel('Brukernavn').fill('testuser');
-      await page.getByLabel('Passord').fill('testpass');
-      await page.getByRole('button', { name: 'Logg inn' }).click();
-      await page.waitForURL('/gallery');
+        test("innlogget bruker kan få tilgang til beskyttede ruter", async ({
+            page,
+        }) => {
+            // Først logg inn
+            await page.getByLabel("Brukernavn").fill("testuser"); // Erstatt med faktisk testbruker
+            await page.getByLabel("Passord").fill("testpass"); // Erstatt med faktisk testpassord
+            await page.getByRole("button", { name: "Logg inn" }).click();
+            await page.waitForURL("/gallery");
+
+            // Prøv å få tilgang til andre beskyttede ruter
+            await page.goto("/gallery");
+            await expect(page).toHaveURL("/gallery");
+
+            await page.goto("/create-ad");
+            await expect(page).toHaveURL("/create-ad");
+        });
     });
 
-    test('login persists after page refresh', async ({ page }) => {
-      // Refresh the gallery page
-      await page.reload();
-      await page.waitForLoadState('networkidle');
+    test.describe("Logout Functionality", () => {
+        test.beforeEach(async ({ page }) => {
+            // Først sørg for at vi er logget inn
+            await goToLoginPage(page);
+            await page.getByLabel("Brukernavn").fill("testuser");
+            await page.getByLabel("Passord").fill("testpass");
+            await page.getByRole("button", { name: "Logg inn" }).click();
+            await page.waitForURL("/gallery");
+        });
 
-      // Should still be on gallery page
-      await expect(page).toHaveURL('/gallery');
+        test("logout fjerner brukercookie og omdirigerer til innlogging", async ({
+            page,
+        }) => {
+            // Sørg for at vi er på en side med logout-knapp
+            await expect(
+                page.getByRole("button", { name: "Logg ut" })
+            ).toBeVisible();
 
-      // Verify user cookie still exists
-      const cookies = await page.context().cookies();
-      const userCookie = cookies.find(cookie => cookie.name === 'user');
-      expect(userCookie).toBeTruthy();
+            // Klikk logout-knappen og vent på at navigasjonen starter
+            await Promise.all([
+                page.waitForURL("/login"),
+                page.getByRole("button", { name: "Logg ut" }).click(),
+            ]);
+
+            // Vent på at eventuelle ventende nettverksforespørsler fullføres
+            await page.waitForLoadState("networkidle");
+
+            // Verifiser at cookie er fjernet - prøv noen ganger om nødvendig
+            await expect(async () => {
+                const cookies = await page.context().cookies();
+                const userCookie = cookies.find(
+                    (cookie) => cookie.name === "user"
+                );
+                expect(userCookie).toBeUndefined();
+            }).toPass({ timeout: 5000 });
+        });
+
+        test("kan ikke få tilgang til beskyttede ruter etter logout", async ({
+            page,
+        }) => {
+            // Sørg for at vi er på en side med logout-knapp
+            await expect(
+                page.getByRole("button", { name: "Logg ut" })
+            ).toBeVisible();
+
+            // Først logg ut med riktige ventebetingelser
+            await Promise.all([
+                page.waitForURL("/login"),
+                page.getByRole("button", { name: "Logg ut" }).click(),
+            ]);
+
+            // Vent på eventuelle ventende nettverksforespørsler
+            await page.waitForLoadState("networkidle");
+
+            // Prøv å få tilgang til beskyttede ruter med riktige ventebetingelser
+            await Promise.all([
+                page.waitForURL("/login"),
+                page.goto("/gallery"),
+            ]);
+
+            await Promise.all([
+                page.waitForURL("/login"),
+                page.goto("/create-ad"),
+            ]);
+        });
     });
 
-    test('login persists when navigating between protected routes', async ({ page }) => {
-      // Navigate to create-ad page
-      await page.goto('/create-ad');
-      await expect(page).toHaveURL('/create-ad');
+    test.describe("Session Persistence", () => {
+        test.beforeEach(async ({ page }) => {
+            // Først sørg for at vi er logget inn
+            await goToLoginPage(page);
+            await page.getByLabel("Brukernavn").fill("testuser");
+            await page.getByLabel("Passord").fill("testpass");
+            await page.getByRole("button", { name: "Logg inn" }).click();
+            await page.waitForURL("/gallery");
+        });
 
-      // Navigate back to gallery
-      await page.goto('/gallery');
-      await expect(page).toHaveURL('/gallery');
+        test("innlogging vedvarer etter sideoppdatering", async ({ page }) => {
+            // Oppdater gallerisiden
+            await page.reload();
+            await page.waitForLoadState("networkidle");
 
-      // Verify user cookie still exists
-      const cookies = await page.context().cookies();
-      const userCookie = cookies.find(cookie => cookie.name === 'user');
-      expect(userCookie).toBeTruthy();
+            // Bli på gallerisiden
+            await expect(page).toHaveURL("/gallery");
+
+            // Verifiser at brukercookie fortsatt eksisterer
+            const cookies = await page.context().cookies();
+            const userCookie = cookies.find((cookie) => cookie.name === "user");
+            expect(userCookie).toBeTruthy();
+        });
+
+        test("innlogging vedvarer ved navigering mellom beskyttede ruter", async ({
+            page,
+        }) => {
+            // Naviger til create-ad siden
+            await page.goto("/create-ad");
+            await expect(page).toHaveURL("/create-ad");
+
+            // Naviger tilbake til galleri
+            await page.goto("/gallery");
+            await expect(page).toHaveURL("/gallery");
+
+            // Verifiser at brukercookie fortsatt eksisterer
+            const cookies = await page.context().cookies();
+            const userCookie = cookies.find((cookie) => cookie.name === "user");
+            expect(userCookie).toBeTruthy();
+        });
+
+        test("innlogging vedvarer i en ny fane", async ({ context }) => {
+            // Opprett en ny side (fane)
+            const newPage = await context.newPage();
+
+            // Prøv å få tilgang til en beskyttet rute i den nye fanen
+            await newPage.goto("/gallery");
+            await expect(newPage).toHaveURL("/gallery");
+
+            // Verifiser at brukercookie eksisterer i den nye fanen
+            const cookies = await newPage.context().cookies();
+            const userCookie = cookies.find((cookie) => cookie.name === "user");
+            expect(userCookie).toBeTruthy();
+
+            // Rydd opp
+            await newPage.close();
+        });
     });
-
-    test('login persists in a new tab', async ({ context }) => {
-      // Create a new page (tab)
-      const newPage = await context.newPage();
-
-      // Try accessing a protected route in the new tab
-      await newPage.goto('/gallery');
-      await expect(newPage).toHaveURL('/gallery');
-
-      // Verify user cookie exists in new tab
-      const cookies = await newPage.context().cookies();
-      const userCookie = cookies.find(cookie => cookie.name === 'user');
-      expect(userCookie).toBeTruthy();
-
-      // Clean up
-      await newPage.close();
-    });
-  });
 });

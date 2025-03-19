@@ -1,7 +1,7 @@
 import React from "react";
-import Layout from "@/components/layout";
 import ChangeItemForm from "@/components/change-item-form";
 
+// Side for å endre en annonse
 const ChangeAdPage: React.FC = () => {
     return (
         <div className="max-w-4xl mx-auto">
