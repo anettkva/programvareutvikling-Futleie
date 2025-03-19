@@ -15,10 +15,10 @@ const SearchableItemGrid: React.FC = () => {
     lng: number;
   } | null>(null);
 
+  // Henter items fra database basert på søketerm, kategori og radius
   useEffect(() => {
     const fetchSearchResults = async () => {
       try {
-        // Fetch item memberships
         const { data: memberships, error: membershipsError } =
           await supabaseClient.from("Item-membership").select("item_id");
 
@@ -30,22 +30,18 @@ const SearchableItemGrid: React.FC = () => {
         const membershipItemIds = memberships.map(
           (membership) => membership.item_id
         );
-
-        // Basic query to fetch all items or items matching search term
         let query = supabaseClient.from("Items").select(`
                     *,
                     Item_images(image_url),
                     Users:owner_id(username, tot_rating, rating_counter)
                 `);
 
-        // Add search filter if searchTerm exists
         if (searchTerm.trim() !== "") {
           query = query.or(
             `title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`
           );
         }
 
-        // Add category filter if a category is selected
         if (selectedCategory) {
           query = query.eq("category", selectedCategory);
         }
@@ -57,7 +53,6 @@ const SearchableItemGrid: React.FC = () => {
           return;
         }
 
-        // Transform the data to match your Item type structure
         let formattedResults = data
           .filter((item) => !membershipItemIds.includes(item.id))
           .map((item) => ({
@@ -70,21 +65,16 @@ const SearchableItemGrid: React.FC = () => {
             ownerRatingCounter: item.Users?.rating_counter || 0,
           }));
 
-        // Filter by location if userLocation is provided
         if (userLocation && radius > 0 && radius < 100) {
           formattedResults = formattedResults.filter((item) => {
-            // Skip items without location data
             if (!item.lat || !item.lng) return false;
 
-            // Calculate distance between user and item
             const distance = calculateDistance(
               userLocation.lat,
               userLocation.lng,
               item.lat,
               item.lng
             );
-
-            // Include the item if it's within the radius
             return distance <= radius;
           });
         }
@@ -98,7 +88,14 @@ const SearchableItemGrid: React.FC = () => {
     fetchSearchResults();
   }, [searchTerm, userLocation, radius, selectedCategory]);
 
-  // Haversine formula to calculate distance between two points on Earth
+  /**
+   * Regner ut distansen mellom to punkter på kartet
+   * @param lat1
+   * @param lon1
+   * @param lat2
+   * @param lon2
+   * @returns Distanse mellom to punkter i km
+   */
   const calculateDistance = (
     lat1: number,
     lon1: number,
@@ -119,6 +116,11 @@ const SearchableItemGrid: React.FC = () => {
     return distance;
   };
 
+  /**
+   * Konverterer grader til radianer
+   * @param deg
+   * @returns
+   */
   const deg2rad = (deg: number): number => {
     return deg * (Math.PI / 180);
   };

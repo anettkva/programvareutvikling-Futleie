@@ -2,6 +2,10 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
+/**
+ *
+ * @returns Knapp som tar brukeren til siden for å opprette en ny annonse
+ */
 const CreateAdButton: React.FC = () => {
   const navigate = useNavigate();
 

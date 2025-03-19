@@ -21,6 +21,11 @@ const LoginForm: React.FC<{}> = () => {
   const [password, setPassword] = useState<string>();
   const navigate = useNavigate();
 
+  /**
+   * Håndterer innlogging av bruker
+   * @param e
+   * @returns
+   */
   const logIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (username && password) {

@@ -7,6 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
+// Komponent importert fra Shadcn https://ui.shadcn.com/
 function Calendar({
   className,
   classNames,

@@ -26,8 +26,6 @@ import Cookies from "js-cookie";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-
-// Fix for default markers not showing
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 
@@ -52,7 +50,6 @@ const formSchema = z.object({
   groups: z.array(z.string()).default([]),
 });
 
-// Helper component for map click events
 function LocationMarker({
   position,
   setPosition,
@@ -72,7 +69,11 @@ function LocationMarker({
   );
 }
 
-function CreateItemForm() {
+/**
+ * Samme som change-item-form bare at denne er for å opprette en ny annonse
+ * @returns Skjema for å opprette en ny annonse
+ */
+const CreateItemForm: React.FC = () => {
   const navigate = useNavigate();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -98,7 +99,6 @@ function CreateItemForm() {
   ]);
   const [groups, setGroups] = useState<{ id: string; name: string }[]>([]);
 
-  // Fetch user groups from membership table
   useEffect(() => {
     const fetchGroups = async () => {
       const userCookie = Cookies.get("user");
@@ -109,7 +109,6 @@ function CreateItemForm() {
 
       const userId = JSON.parse(userCookie).id;
 
-      // Fetch group IDs from Memberships table
       const { data: membershipsData, error: membershipsError } =
         await supabaseClient
           .from("Memberships")
@@ -129,7 +128,6 @@ function CreateItemForm() {
         return;
       }
 
-      // Fetch group names based on group IDs
       const { data: groupsData, error: groupsError } = await supabaseClient
         .from("Groups")
         .select("id, name")
@@ -147,7 +145,6 @@ function CreateItemForm() {
     fetchGroups();
   }, []);
 
-  // Update form values when location changes
   useEffect(() => {
     if (userLocation) {
       form.setValue("lat", userLocation.lat);
@@ -269,7 +266,6 @@ function CreateItemForm() {
       }
     }
 
-    // Insert item into selected groups
     if (values.groups && values.groups.length > 0) {
       const groupMemberships = values.groups.map((groupId) => ({
         item_id: itemId,
@@ -506,6 +502,6 @@ function CreateItemForm() {
       </form>
     </Form>
   );
-}
+};
 
 export default CreateItemForm;

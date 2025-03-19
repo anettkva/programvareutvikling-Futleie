@@ -22,6 +22,9 @@ const AddItemToGroupButton: React.FC = () => {
     defaultValues: { selectedItems: [] },
   });
 
+  /**
+   * Metode for å hente annonser fra bruker
+   */
   const fetchItems = async () => {
     try {
       setLoading(true);
@@ -36,8 +39,9 @@ const AddItemToGroupButton: React.FC = () => {
       try {
         const user = JSON.parse(userCookie);
         userId = user.id;
-      } catch (e) {
+      } catch (err) {
         userId = userCookie;
+        console.log(err);
       }
 
       const { data: itemsData, error: itemsError } = await supabaseClient
@@ -53,7 +57,6 @@ const AddItemToGroupButton: React.FC = () => {
 
       setItems(itemsData);
 
-      // Fetch existing memberships
       const { data: membershipsData, error: membershipsError } =
         await supabaseClient
           .from("Item-membership")
@@ -71,11 +74,17 @@ const AddItemToGroupButton: React.FC = () => {
       );
     } catch (err) {
       setError("An unexpected error occurred");
+      console.log(err);
     } finally {
       setLoading(false);
     }
   };
 
+  /**
+   * Metode for å legge til annonser i en gruppe
+   * @param data
+   * @returns
+   */
   const handleAddItemsToGroup = async (data: { selectedItems: number[] }) => {
     if (!groupId) {
       setError("No group ID provided");
@@ -106,6 +115,7 @@ const AddItemToGroupButton: React.FC = () => {
       setSuccess("Annonsene ble lagt til i gruppen");
     } catch (err) {
       setError("An unexpected error occurred");
+      console.log(err);
     } finally {
       setLoading(false);
     }

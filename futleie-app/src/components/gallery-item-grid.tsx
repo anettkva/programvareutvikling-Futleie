@@ -9,11 +9,14 @@ const GalleryItemGrid: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    /**
+     * Henter alle items fra databasen og setter de i state
+     * @returns
+     */
     const fetchAllItems = async () => {
       try {
         setLoading(true);
 
-        // Fetch item memberships
         const { data: memberships, error: membershipsError } =
           await supabaseClient.from("Item-membership").select("item_id");
 
@@ -27,7 +30,6 @@ const GalleryItemGrid: React.FC = () => {
           (membership) => membership.item_id
         );
 
-        // Fetch all items with related data
         let query = supabaseClient.from("Items").select(`
                     *,
                     Item_images(image_url),
@@ -43,7 +45,6 @@ const GalleryItemGrid: React.FC = () => {
           return;
         }
 
-        // Transform the data to match the Item type structure
         const formattedResults = data
           .filter((item) => !membershipItemIds.includes(item.id))
           .map((item) => ({
