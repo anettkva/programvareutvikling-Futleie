@@ -103,7 +103,15 @@ const AdminDashboard: React.FC = () => {
                                         </div>
                                     </TableCell>
                                     <TableCell className="max-w-[80px]">
-                                        <div className="truncate">{null}</div>
+                                        <div className="truncate">
+                                            {user.tot_rating &&
+                                            user.rating_counter
+                                                ? (
+                                                      user.tot_rating /
+                                                      user.rating_counter
+                                                  ).toFixed(1)
+                                                : "Ingen rating"}
+                                        </div>
                                     </TableCell>
                                     <TableCell className="max-w-[80px]">
                                         <Button
